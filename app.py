@@ -551,6 +551,9 @@ def submit_suggestion():
 
 # --- WATCHMODE STREAMING ENGINE ---
 def get_streaming_providers(imdb_id):
+    import requests
+    import os
+    
     if not imdb_id: 
         return None
     
@@ -559,21 +562,32 @@ def get_streaming_providers(imdb_id):
         print("Watchmode API Key missing from environment.")
         return None
     
-    # Watchmode API sources endpoint
-    url = f"https://api.watchmode.com/v1/title/{imdb_id}/sources/?apiKey={api_key}"
     try:
-        response = requests.get(url)
+        # STEP 1: Ask Watchmode to translate the IMDb ID into a Watchmode ID
+        search_url = f"https://api.watchmode.com/v1/search/?search_field=imdb_id&search_value={imdb_id}&apiKey={api_key}"
+        search_res = requests.get(search_url).json()
+        
+        # Check if we got a match
+        title_results = search_res.get('title_results', [])
+        if not title_results:
+            print(f"Watchmode couldn't find a match for IMDb ID: {imdb_id}")
+            return None
+            
+        watchmode_id = title_results[0].get('id')
+        
+        # STEP 2: Use the Watchmode ID to get the streaming sources
+        sources_url = f"https://api.watchmode.com/v1/title/{watchmode_id}/sources/?apiKey={api_key}"
+        response = requests.get(sources_url)
         data = response.json()
         
-        # We use a dictionary to store unique providers by name 
-        # This prevents showing "Netflix" three times if they list 4K, HD, and SD separately.
         subs = {}
-        for source in data:
-            # We filter for 'sub' (Subscription) to keep the "Where to Watch" section 
-            # focused on "Free with Membership" rather than "Rent for $3.99"
-            if source.get('type') == 'sub':
-                subs[source['name']] = source['logo_100px']
-                
+        # Ensure Watchmode returned a valid list of sources
+        if isinstance(data, list):
+            for source in data:
+                # 'sub' means Free with Subscription (Netflix, Max, Hulu, etc.)
+                if source.get('type') == 'sub':
+                    subs[source['name']] = source['logo_100px']
+                    
         return subs if subs else None
     except Exception as e:
         print(f"Watchmode API Error: {e}")
