@@ -53,6 +53,8 @@ def update_user_level(user_id):
     except Exception as e:
         print(f"Leveling Error: {e}")
 
+# --- START HIGHLIGHTING & COPYING HERE ---
+
 @app.route('/')
 def home():
     current_user_id = session.get('user_id')
@@ -69,10 +71,32 @@ def home():
             text_size = user_data.get('text_size', 'medium')
             needs_tos = not user_data.get('agreed_to_tos', False)
         except: pass
+
+    # NEW: Fetch ALL reviews (including drafts for 'Coming Soon' placeholders)
+    try:
+        res = supabase.table('reviews').select('title, slug, category, staff_score, community_score, cover_image_url, release_year, status').order('created_at', desc=True).execute()
+        reviews = res.data if res.data else []
+    except Exception as e:
+        reviews = []
+        print(f"Error fetching reviews: {e}")
             
     return render_template('index.html', user_id=current_user_id, user_role=user_role,
                            username=username, profile_image_url=profile_image_url,
-                           user_level=user_level, text_size=text_size, needs_tos=needs_tos)
+                           user_level=user_level, text_size=text_size, needs_tos=needs_tos,
+                           reviews=reviews) # <-- We now pass the reviews to the frontend!
+
+# --- LEGAL ROUTES ---
+@app.route('/tos')
+def tos():
+    return render_template('tos.html')
+
+@app.route('/privacy')
+def privacy():
+    return render_template('privacy.html')
+
+# --- AUTHENTICATION & PROFILE ROUTES ---
+
+# --- STOP HIGHLIGHTING & COPYING HERE ---
 
 # --- AUTHENTICATION & PROFILE ROUTES ---
 

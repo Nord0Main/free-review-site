@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nord Reviews</title>
+    <title>Reviews50</title>
     <style>
 
         body.text-small { font-size: 14px; }
@@ -97,6 +97,7 @@
         
         /* FOOTER STYLES */
         .site-footer { margin-top: 40px; padding: 25px 0; border-top: 1px solid var(--border-color); text-align: center; color: var(--text-muted); display: flex; flex-direction: column; gap: 10px; }
+        .footer-links { display: flex; justify-content: center; gap: 15px; margin-top: 10px; flex-wrap: wrap; }
         .footer-links a { display: inline-flex; align-items: center; gap: 5px; color: var(--text-main); text-decoration: none; font-weight: bold; background: var(--bg-card); padding: 8px 15px; border-radius: 5px; border: 1px solid var(--border-color); transition: 0.2s; margin: 0 5px; }
         .footer-links a:hover { border-color: var(--accent-primary); }
         .discord-btn { color: #7289da !important; border-color: #7289da !important; }
@@ -112,7 +113,7 @@
 <body class="text-{{ text_size or 'medium' }}">
 
     <div class="top-nav">
-        <h1 style="margin: 0; color: var(--text-main);">Nord Reviews</h1>
+        <h1 style="margin: 0; color: var(--text-main);">Reviews50</h1>
         <div class="user-controls" style="display: flex; align-items: center;">
             {% if user_id %}
                 <div class="profile-indicator">
@@ -198,9 +199,11 @@
     <footer class="site-footer">
         <div class="footer-links">
             <a href="https://discord.gg/CQ6JYt2v" target="_blank" class="discord-btn" title="Join our community!">💬 Discord</a>
+            <a href="/tos">Terms of Service</a>
+            <a href="/privacy">Privacy Policy</a>
             <a href="#" title="Help keep the lights on!">☕ Support Us</a>
         </div>
-        <small>© 2026 Nord Reviews. All rights reserved.</small>
+        <small>© 2026 Reviews50. All rights reserved.</small>
     </footer>
 
     <script>
@@ -264,10 +267,8 @@
                 if (sortMethod === 'low_score') return a.staff_score - b.staff_score;
                 
                 // NEW: Release Year Sorting!
-                // We use || 0 to act as a fallback just in case an older review doesn't have a year saved
                 if (sortMethod === 'release_newest') return (b.release_year || 0) - (a.release_year || 0);
                 if (sortMethod === 'release_oldest') {
-                    // Push items with no release year to the bottom when sorting by oldest
                     const yearA = a.release_year || 9999; 
                     const yearB = b.release_year || 9999;
                     return yearA - yearB;
@@ -300,58 +301,74 @@
 
             reviewsArray.forEach(review => {
                 const isDraft = review.status === 'draft';
-                const draftTag = isDraft ? '<span style="color: var(--accent-danger); font-weight: bold; border: 1px solid var(--accent-danger); padding: 2px 6px; border-radius: 4px; font-size: 0.6em; vertical-align: middle; margin-right: 8px;">DRAFT</span>' : '';
                 const controTag = review.is_controversial ? '<span style="color: var(--accent-warning); font-size: 0.7em; background: var(--bg-input); padding: 2px 8px; border-radius: 4px; border: 1px solid var(--accent-warning); margin-left: 8px;" title="See Mission Statement">⚠️ Context Notice</span>' : '';
-                
-                const tagsDisplay = (review.tags && review.tags.length > 0) 
-                    ? `<div style="margin-top: 10px;">` + review.tags.map(t => `<span style="background: var(--bg-body); color: var(--accent-secondary); padding: 4px 10px; border-radius: 12px; font-size: 0.8em; margin-right: 5px; border: 1px solid var(--border-color); display: inline-block; margin-bottom: 5px;">#${t}</span>`).join('') + `</div>`
-                    : '';
 
-                const cardBorder = isDraft ? 'border-color: var(--accent-danger); border-style: dashed;' : 'border-color: var(--border-color);';
-                const previewText = review.tldr ? review.tldr : review.content.substring(0, 150) + '...';
-                
-                const authorName = review.users && review.users.username ? review.users.username : 'Staff';
-                const authorLevel = review.users && review.users.level ? review.users.level : 1;
-                const authorImg = review.users && review.users.profile_image_url ? review.users.profile_image_url : 'https://via.placeholder.com/30';
-                
-                const thumbUrl = review.cover_image_url || 'https://via.placeholder.com/150x210/2c2c2c/888888?text=No+Image';
-
-                const authorDisplay = `
-                    <div style="display: flex; align-items: center; gap: 10px; margin-top: 15px; border-top: 1px solid var(--border-color); padding-top: 15px;">
-                        <div style="position: relative; display: inline-block; width: 35px; height: 35px;">
-                            <a href="/user/${authorName}">
-                                <img src="${authorImg}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 1px solid var(--border-color);">
-                            </a>
-                            <span style="position: absolute; bottom: -5px; right: -8px; background: var(--accent-warning); color: #121212; font-weight: bold; padding: 1px 4px; border-radius: 6px; font-size: 0.6em; border: 1px solid var(--bg-card); z-index: 2;">Lv.${authorLevel}</span>
-                        </div>
-                        <small style="color: var(--text-muted); opacity: 0.8; font-size: 0.9em;">
-                            Posted by <a href="/user/${authorName}" style="color: var(--text-main); font-weight: bold; text-decoration: none;">${authorName}</a> on ${new Date(review.created_at).toLocaleDateString()}
-                        </small>
-                    </div>
-                `;
-
-                const card = `
-                    <div class="review-card" style="${cardBorder}">
-                        <img src="${thumbUrl}" class="review-thumb" alt="Cover Image">
-                        
-                        <div class="review-content">
-                            <div>
-                                <a href="/review/${review.slug}" style="text-decoration: none;">
-                                    <a href="/review/${review.slug}" style="text-decoration: none;">
-                                    <h2>${draftTag}${review.title} <span style="color: var(--text-muted); font-size: 0.8em; font-weight: normal;">(${review.release_year || 'TBA'})</span>${controTag}</h2>
-                                </a>
-                                <p class="rating" style="color: var(--text-main);">
-                                    <span style="color: var(--accent-warning);">Staff Score: ${review.staff_score || 'N/A'} / 50</span> 
-                                    <span style="color: var(--text-muted); font-weight: normal; font-size: 0.9em; margin-left: 10px;">| Community: ${review.vote_count > 0 ? review.community_score : 'TBD'}</span>
-                                </p>
-                                <p style="margin: 8px 0; font-size: 0.95em; color: var(--text-muted); line-height: 1.5;">${previewText}</p>
-                                ${tagsDisplay}
+                if (isDraft) {
+                    // GRAYED-OUT PLACEHOLDER FOR DRAFTS
+                    const thumbUrl = review.cover_image_url || 'https://via.placeholder.com/150x210/2c2c2c/888888?text=Coming+Soon';
+                    const card = `
+                        <div class="review-card" style="border-color: var(--accent-warning); border-style: dashed; opacity: 0.6;">
+                            <img src="${thumbUrl}" class="review-thumb" alt="Cover Image" style="filter: grayscale(100%);">
+                            <div class="review-content" style="justify-content: center;">
+                                <div>
+                                    <h2 style="color: var(--text-muted); cursor: default;">${review.title} <span style="font-size: 0.8em; font-weight: normal;">(${review.release_year || 'TBA'})</span>${controTag}</h2>
+                                    <span style="background: var(--bg-body); color: var(--text-muted); padding: 4px 10px; border-radius: 12px; font-size: 0.8em; margin-right: 5px; border: 1px solid var(--border-color); display: inline-block; margin-bottom: 5px;">${review.category.toUpperCase()}</span>
+                                    <p style="color: var(--accent-warning); font-weight: bold; margin-top: 15px;">🚧 Score and review coming soon...</p>
+                                </div>
                             </div>
-                            ${authorDisplay}
                         </div>
-                    </div>
-                `;
-                container.innerHTML += card;
+                    `;
+                    container.innerHTML += card;
+                } else {
+                    // STANDARD PUBLISHED REVIEW CARD
+                    const tagsDisplay = (review.tags && review.tags.length > 0) 
+                        ? `<div style="margin-top: 10px;">` + review.tags.map(t => `<span style="background: var(--bg-body); color: var(--accent-secondary); padding: 4px 10px; border-radius: 12px; font-size: 0.8em; margin-right: 5px; border: 1px solid var(--border-color); display: inline-block; margin-bottom: 5px;">#${t}</span>`).join('') + `</div>`
+                        : '';
+
+                    const previewText = review.tldr ? review.tldr : review.content.substring(0, 150) + '...';
+                    
+                    const authorName = review.users && review.users.username ? review.users.username : 'Staff';
+                    const authorLevel = review.users && review.users.level ? review.users.level : 1;
+                    const authorImg = review.users && review.users.profile_image_url ? review.users.profile_image_url : 'https://via.placeholder.com/30';
+                    
+                    const thumbUrl = review.cover_image_url || 'https://via.placeholder.com/150x210/2c2c2c/888888?text=No+Image';
+
+                    const authorDisplay = `
+                        <div style="display: flex; align-items: center; gap: 10px; margin-top: 15px; border-top: 1px solid var(--border-color); padding-top: 15px;">
+                            <div style="position: relative; display: inline-block; width: 35px; height: 35px;">
+                                <a href="/user/${authorName}">
+                                    <img src="${authorImg}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 1px solid var(--border-color);">
+                                </a>
+                                <span style="position: absolute; bottom: -5px; right: -8px; background: var(--accent-warning); color: #121212; font-weight: bold; padding: 1px 4px; border-radius: 6px; font-size: 0.6em; border: 1px solid var(--bg-card); z-index: 2;">Lv.${authorLevel}</span>
+                            </div>
+                            <small style="color: var(--text-muted); opacity: 0.8; font-size: 0.9em;">
+                                Posted by <a href="/user/${authorName}" style="color: var(--text-main); font-weight: bold; text-decoration: none;">${authorName}</a> on ${new Date(review.created_at).toLocaleDateString()}
+                            </small>
+                        </div>
+                    `;
+
+                    const card = `
+                        <div class="review-card" style="border-color: var(--border-color);">
+                            <img src="${thumbUrl}" class="review-thumb" alt="Cover Image">
+                            
+                            <div class="review-content">
+                                <div>
+                                    <a href="/review/${review.slug}" style="text-decoration: none;">
+                                        <h2>${review.title} <span style="color: var(--text-muted); font-size: 0.8em; font-weight: normal;">(${review.release_year || 'TBA'})</span>${controTag}</h2>
+                                    </a>
+                                    <p class="rating" style="color: var(--text-main);">
+                                        <span style="color: var(--accent-warning);">Staff Score: ${review.staff_score || 'N/A'} / 50</span> 
+                                        <span style="color: var(--text-muted); font-weight: normal; font-size: 0.9em; margin-left: 10px;">| Community: ${review.vote_count > 0 ? review.community_score : 'TBD'}</span>
+                                    </p>
+                                    <p style="margin: 8px 0; font-size: 0.95em; color: var(--text-muted); line-height: 1.5;">${previewText}</p>
+                                    ${tagsDisplay}
+                                </div>
+                                ${authorDisplay}
+                            </div>
+                        </div>
+                    `;
+                    container.innerHTML += card;
+                }
             });
         }
 
@@ -362,7 +379,7 @@
     <div class="tos-overlay">
         <div class="tos-box">
             <h2 style="color: var(--accent-primary); margin-top: 0;">Community Guidelines & Age Gate</h2>
-            <p style="color: var(--text-main);">To keep Nord Reviews unbiased and relevant, you must agree to our terms:</p>
+            <p style="color: var(--text-main);">To keep Reviews50 unbiased and relevant, you must agree to our terms:</p>
             <div class="tos-content">
                 <strong>1. Content Focus:</strong> I agree that all reviews/comments will focus strictly on the content (games/movies) and not on external politics or personal movements.<br><br>
                 <strong>2. Age Requirement:</strong> I certify that I am at least 13 years of age.<br><br>
@@ -375,6 +392,5 @@
         </div>
     </div>
     {% endif %}
-
 </body>
 </html>
