@@ -222,6 +222,8 @@
     </footer>
 
     <script>
+        const currentUserRole = "{{ user_role }}"; // <-- ADD THIS LINE
+        
         let currentReviewsData = [];
         let currentCategory = 'game';
 
@@ -321,12 +323,24 @@
                 if (isDraft) {
                     // GRAYED-OUT PLACEHOLDER FOR DRAFTS
                     const thumbUrl = review.cover_image_url || 'https://via.placeholder.com/150x210/2c2c2c/888888?text=Coming+Soon';
+                    
+                    // Default unclickable title for public
+                    let titleHtml = `<h2 style="color: var(--text-muted); cursor: default;">${review.title} <span style="font-size: 0.8em; font-weight: normal;">(${review.release_year || 'TBA'})</span>${controTag}</h2>`;
+                    
+                    // Clickable Edit link ONLY for Staff
+                    if (currentUserRole === 'owner' || currentUserRole === 'admin') {
+                        titleHtml = `
+                            <a href="/edit-review/${review.slug}" style="text-decoration: none;">
+                                <h2 style="color: var(--accent-warning); cursor: pointer;">${review.title} <span style="font-size: 0.8em; font-weight: normal;">(${review.release_year || 'TBA'})</span>${controTag} ✏️ <span style="font-size: 0.6em;">(Edit Draft)</span></h2>
+                            </a>`;
+                    }
+
                     const card = `
                         <div class="review-card" style="border-color: var(--accent-warning); border-style: dashed; opacity: 0.6;">
                             <img src="${thumbUrl}" class="review-thumb" alt="Cover Image" style="filter: grayscale(100%);">
                             <div class="review-content" style="justify-content: center;">
                                 <div>
-                                    <h2 style="color: var(--text-muted); cursor: default;">${review.title} <span style="font-size: 0.8em; font-weight: normal;">(${review.release_year || 'TBA'})</span>${controTag}</h2>
+                                    ${titleHtml}
                                     <span style="background: var(--bg-body); color: var(--text-muted); padding: 4px 10px; border-radius: 12px; font-size: 0.8em; margin-right: 5px; border: 1px solid var(--border-color); display: inline-block; margin-bottom: 5px;">${review.category.toUpperCase()}</span>
                                     <p style="color: var(--accent-warning); font-weight: bold; margin-top: 15px;">🚧 Score and review coming soon...</p>
                                 </div>
