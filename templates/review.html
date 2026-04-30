@@ -3,13 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ seo.title }} - Nord Reviews</title>
+    <title>{{ seo.title }} - Reviews50</title>
 
-    <meta property="og:site_name" content="Nord Reviews">
-    <meta property="og:title" content="{{ seo.title }}">
-    <meta property="og:description" content="{{ seo.tldr }}">
-    <meta property="og:image" content="{{ seo.cover_image_url or 'https://via.placeholder.com/1200x630/1e1e1e/4CAF50?text=Nord+Reviews' }}">
-    <meta name="twitter:card" content="summary_large_image">
+    <meta name="title" content="{{ seo.title }} - Reviews50">
+    <meta name="description" content="{{ seo.tldr or 'Read the full review and community scores on Reviews50.' }}">
+    
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="{{ seo.title }} - Reviews50">
+    <meta property="og:description" content="{{ seo.tldr or 'Read the full review and community scores on Reviews50.' }}">
+    <meta property="og:image" content="{{ seo.cover_image_url or 'https://via.placeholder.com/1200x630/1e1e1e/4CAF50?text=Reviews50' }}">
+
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:title" content="{{ seo.title }} - Reviews50">
+    <meta property="twitter:description" content="{{ seo.tldr or 'Read the full review and community scores on Reviews50.' }}">
+    <meta property="twitter:image" content="{{ seo.cover_image_url or 'https://via.placeholder.com/1200x630/1e1e1e/4CAF50?text=Reviews50' }}">
 
     <style>
         /* NEW: Text Scaling Rules */
