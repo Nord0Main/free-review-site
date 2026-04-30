@@ -794,7 +794,7 @@ def get_reviews_by_category(category):
         return jsonify({"status": "error", "message": "Invalid category"}), 400
 
     user_id = session.get('user_id')
-    user_role = 'user'
+    user_role = 'guest'
     show_mature = False # Default to Safe For Work for guests
 
     if user_id:
@@ -807,9 +807,12 @@ def get_reviews_by_category(category):
     try:
         query = supabase.table('reviews').select('*, users(username, profile_image_url, level)').eq('category', category)
         
-        # If they aren't staff, force it to ONLY pull 'published' status
-        if user_role not in ['owner', 'admin']:
+        # THE FIX: Guests ONLY see published. Logged-in users see published + drafts.
+        # We use .in_() to ensure 'pending' community suggestions never leak onto the feed.
+        if not user_id:
             query = query.eq('status', 'published')
+        else:
+            query = query.in_('status', ['published', 'draft'])
             
         response = query.order('created_at', desc=True).execute()
         reviews = response.data
@@ -820,10 +823,17 @@ def get_reviews_by_category(category):
             mature_tags = ['nsfw', '18+', 'mature']
             for r in reviews:
                 r_tags = r.get('tags') or []
-                # Keep the review only if none of its tags match the mature list
                 if not any(t in r_tags for t in mature_tags):
                     safe_reviews.append(r)
             reviews = safe_reviews
+
+        # SECURITY PATCH: Strip the actual text from drafts if the user isn't staff.
+        # This prevents tech-savvy users from inspecting the page code to read reviews early!
+        if user_role not in ['owner', 'admin']:
+            for r in reviews:
+                if r.get('status') == 'draft':
+                    r['content'] = "Nice try! This review isn't finished yet."
+                    r['tldr'] = "Nice try! This review isn't finished yet."
 
         return jsonify({"status": "success", "data": reviews})
     except Exception as e:
