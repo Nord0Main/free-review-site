@@ -349,6 +349,18 @@
                         </div>
                     `;
 
+                    {% if streaming %}
+                    <div style="background: var(--bg-input); padding: 15px; border-radius: 8px; border: 1px solid var(--border-color); margin: 20px 0;">
+                        <h3 style="margin-top: 0; font-size: 0.9em; color: var(--accent-secondary); text-transform: uppercase; letter-spacing: 1px;">📺 Included with Subscription</h3>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-top: 10px;">
+                            {% for name, logo_url in streaming.items() %}
+                                <img src="{{ logo_url }}" alt="{{ name }}" title="Watch on {{ name }}" style="width: 40px; height: 40px; border-radius: 8px; border: 1px solid var(--border-color); background: #000;">
+                            {% endfor %}
+                        </div>
+                        <p style="font-size: 0.7em; color: var(--text-muted); margin-bottom: 0; margin-top: 10px;">Streaming data provided by Watchmode.</p>
+                    </div>
+                    {% endif %}
+
                     // Render Comments with True Nesting & Level Sorting
                     const commentsContainer = document.getElementById('comments-list');
                     if (!review.comments || review.comments.length === 0) {

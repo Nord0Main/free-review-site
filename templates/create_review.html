@@ -150,6 +150,9 @@
 
             <label>Cover Image URL</label>
             <input type="text" name="cover_image_url" value="{{ review.cover_image_url if review else '' }}" placeholder="https://..." required>
+
+            <label>IMDb ID (For "Where to Watch")</label>
+            <input type="text" name="imdb_id" value="{{ review.imdb_id if review else '' }}" placeholder="e.g., tt0137523">
         </div>
 
         <div class="form-section">

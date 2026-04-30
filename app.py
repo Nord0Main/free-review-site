@@ -325,8 +325,30 @@ def quick_add_draft():
             import uuid
             slug = f"{slug}-{uuid.uuid4().hex[:6]}"
 
+            # ... (slug generation logic) ...
+            
             placeholder_text = title.replace(' ', '+')[:15]
             cover_image_url = f"https://via.placeholder.com/150x210/1e1e1e/88C0D0?text={placeholder_text}"
+            imdb_id = None
+
+            # --- OMDB SMART SEARCH (For Posters & IMDb IDs) ---
+            omdb_api_key = os.environ.get("OMDB_API_KEY")
+            if category in ['movie', 'tv'] and omdb_api_key:
+                import urllib.parse
+                query_encoded = urllib.parse.quote(title)
+                year_param = f"&y={release_year}" if release_year else ""
+                
+                search_url = f"http://www.omdbapi.com/?t={query_encoded}{year_param}&apikey={omdb_api_key}"
+                try:
+                    search_res = requests.get(search_url).json()
+                    if search_res.get('Response') == 'True':
+                        imdb_id = search_res.get('imdbID')
+                        poster_url = search_res.get('Poster')
+                        if poster_url and poster_url != "N/A":
+                            cover_image_url = poster_url
+                except Exception as e:
+                    print(f"OMDb Search Failed for {title}: {e}")
+            # ------------------------------------------------
 
             payload = {
                 "title": safe_censor(title),
@@ -341,6 +363,7 @@ def quick_add_draft():
                 "rating": 0,
                 "release_year": release_year,
                 "cover_image_url": cover_image_url,
+                "imdb_id": imdb_id, # Saves the ID for Watchmode!
                 "tags": [],
                 "is_controversial": False
             }
@@ -516,27 +539,84 @@ def submit_suggestion():
     except Exception as e:
         return f"Error: {e}"
 
+# --- WATCHMODE STREAMING ENGINE ---
+def get_streaming_providers(imdb_id):
+    if not imdb_id: 
+        return None
+    
+    api_key = os.environ.get("WATCHMODE_API_KEY")
+    if not api_key: 
+        print("Watchmode API Key missing from environment.")
+        return None
+    
+    # Watchmode API sources endpoint
+    url = f"https://api.watchmode.com/v1/title/{imdb_id}/sources/?apiKey={api_key}"
+    try:
+        response = requests.get(url)
+        data = response.json()
+        
+        # We use a dictionary to store unique providers by name 
+        # This prevents showing "Netflix" three times if they list 4K, HD, and SD separately.
+        subs = {}
+        for source in data:
+            # We filter for 'sub' (Subscription) to keep the "Where to Watch" section 
+            # focused on "Free with Membership" rather than "Rent for $3.99"
+            if source.get('type') == 'sub':
+                subs[source['name']] = source['logo_100px']
+                
+        return subs if subs else None
+    except Exception as e:
+        print(f"Watchmode API Error: {e}")
+        return None
+
 @app.route('/review/<slug>')
 def review_page(slug):
     user_id = session.get('user_id')
     user_role = 'user'
     text_size = 'medium' # Default
     
+    # 1. Fetch User Customizations
     if user_id:
         try:
             res = supabase.table('users').select('role, text_size').eq('id', user_id).single().execute()
             user_role = res.data.get('role', 'user')
             text_size = res.data.get('text_size', 'medium')
         except: pass
-        
-    seo_data = {"title": "Nord Reviews", "tldr": "Read the full review and community scores.", "cover_image_url": ""}
+    
+    # 2. Fetch Review Data & SEO
+    review_data = None
+    seo_data = {"title": "Reviews50", "tldr": "Read the full review and community scores.", "cover_image_url": ""}
+    
     try:
-        res = supabase.table('reviews').select('title, tldr, cover_image_url').eq('slug', slug).single().execute()
+        # We select '*' to ensure we get the content, granular scores, and the new imdb_id
+        res = supabase.table('reviews').select('*, users(username, profile_image_url, level)').eq('slug', slug).single().execute()
         if res.data:
-            seo_data = res.data
-    except: pass
+            review_data = res.data
+            seo_data = {
+                "title": review_data.get('title'),
+                "tldr": review_data.get('tldr'),
+                "cover_image_url": review_data.get('cover_image_url')
+            }
+    except Exception as e:
+        print(f"Database Error: {e}")
+        return render_template('404.html'), 404
 
-    return render_template('review.html', slug=slug, user_role=user_role, seo=seo_data, text_size=text_size, current_user_id=user_id)
+    if not review_data:
+        return render_template('404.html'), 404
+
+    # 3. Fetch Live Streaming Data (Only if imdb_id exists)
+    streaming_data = None
+    if review_data.get('imdb_id'):
+        streaming_data = get_streaming_providers(review_data.get('imdb_id'))
+
+    return render_template('review.html', 
+                           slug=slug, 
+                           user_role=user_role, 
+                           review=review_data, 
+                           seo=seo_data, 
+                           streaming=streaming_data,
+                           text_size=text_size, 
+                           current_user_id=user_id)
 
 # --- STAFF INBOX ---
 
