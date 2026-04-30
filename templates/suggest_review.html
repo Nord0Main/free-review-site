@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Suggest a Review</title>
+    <style>
+        /* NEW: Text Scaling Rules */
+        body.text-small { font-size: 14px; }
+        body.text-medium { font-size: 16px; }
+        body.text-large { font-size: 20px; }
+
+        /* CORE THEME VARIABLES */
+        :root {
+            --bg-body: #121212; --bg-card: #1e1e1e; --bg-input: #2c2c2c;
+            --text-main: #ffffff; --text-muted: #cccccc; --border-color: #333333;
+            --accent-primary: #4CAF50; --accent-secondary: #2196F3;
+            --accent-warning: #ffeb3b; --accent-danger: #ff5252;
+        }
+
+        [data-theme="nord"] {
+            --bg-body: #161A22; --bg-card: #202531; --bg-input: #2C3342;
+            --text-main: #ECEFF4; --text-muted: #A3BECC; --border-color: #3B4559;
+            --accent-primary: #88C0D0; --accent-secondary: #81A1C1;
+            --accent-warning: #EBCB8B; --accent-danger: #BF616A;
+        }
+
+        [data-theme="grey-orange"] {
+            --bg-body: #1a1a1a; --bg-card: #262626; --bg-input: #333333;
+            --text-main: #f0f0f0; --text-muted: #999999; --border-color: #444444;
+            --accent-primary: #FF8C00; --accent-secondary: #FFB347;
+            --accent-warning: #FFD700; --accent-danger: #e63946;
+        }
+        
+        [data-theme="cyberpunk"] {
+            --bg-body: #0d0221; --bg-card: #19053b; --bg-input: #260a5e;
+            --text-main: #00ffcc; --text-muted: #ff77ff; --border-color: #ff00ff;
+            --accent-primary: #fcee0a; --accent-secondary: #00ffcc;
+            --accent-warning: #ff00ff; --accent-danger: #ff3300;
+        }
+
+        [data-theme="midnight"] {
+            --bg-body: #0b0c10; --bg-card: #12141a; --bg-input: #1a1d24;
+            --text-main: #e0e6ed; --text-muted: #8b9eb7; --border-color: #2b303b;
+            --accent-primary: #6d83f2; --accent-secondary: #4a5d96;
+            --accent-warning: #f2a65a; --accent-danger: #e06c75;
+        }
+
+        /* NEW: FOREST THEME */
+        [data-theme="forest"] {
+            --bg-body: #0d1a11; --bg-card: #142b1a; --bg-input: #1b3822;
+            --text-main: #e8f5e9; --text-muted: #a5d6a7; --border-color: #2e5939;
+            --accent-primary: #4caf50; --accent-secondary: #8bc34a;
+            --accent-warning: #ffb300; --accent-danger: #e53935;
+        }
+
+        /* NEW: BLOOD MOON THEME */
+        [data-theme="bloodmoon"] {
+            --bg-body: #140505; --bg-card: #240a0a; --bg-input: #330e0e;
+            --text-main: #ffebee; --text-muted: #ef9a9a; --border-color: #4a1515;
+            --accent-primary: #e53935; --accent-secondary: #ff5252;
+            --accent-warning: #ffb300; --accent-danger: #d32f2f;
+        }
+
+        /* NEW: SYNTHWAVE THEME */
+        [data-theme="synthwave"] {
+            --bg-body: #0b021a; --bg-card: #150433; --bg-input: #1f074d;
+            --text-main: #f0e6ff; --text-muted: #b388ff; --border-color: #3b0d8a;
+            --accent-primary: #f50057; --accent-secondary: #00e5ff;
+            --accent-warning: #ffea00; --accent-danger: #ff1744;
+        }
+
+        [data-theme="light"] {
+            --bg-body: #f4f4f9; --bg-card: #ffffff; --bg-input: #eeeeee;
+            --text-main: #222222; --text-muted: #666666; --border-color: #dddddd;
+            --accent-primary: #2e7d32; --accent-secondary: #1565c0;
+            --accent-warning: #f57f17; --accent-danger: #c62828;
+        }
+
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; background-color: var(--bg-body); color: var(--text-main); transition: 0.3s; }
+        .form-section { background-color: var(--bg-card); padding: 20px; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 20px; }
+        h2 { color: var(--accent-primary); margin-top: 0; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; }
+        label { display: block; margin: 15px 0 5px; font-weight: bold; color: var(--text-muted); }
+        input[type="text"], input[type="number"], select, textarea { width: 100%; padding: 10px; background-color: var(--bg-input); border: 1px solid var(--border-color); color: var(--text-main); border-radius: 4px; box-sizing: border-box; }
+        textarea { resize: vertical; min-height: 150px; }
+        .score-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
+        .hidden { display: none; }
+        .btn-row { display: flex; gap: 15px; margin-top: 20px; }
+        button { padding: 12px 20px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 16px; flex: 1; transition: 0.2s; }
+        .btn-submit { background-color: var(--accent-primary); color: white; }
+        .btn-draft { background-color: var(--accent-warning); color: black; }
+        .btn-cancel { background-color: var(--accent-danger); color: white; }
+        button:hover { opacity: 0.9; }
+        
+        /* Toggle Styles */
+        .toggle-container { display: flex; gap: 10px; margin-bottom: 20px; }
+        .toggle-label { cursor: pointer; padding: 10px 20px; background-color: var(--bg-input); color: var(--text-muted); border-radius: 5px; font-weight: bold; border: 2px solid transparent; transition: 0.2s; }
+        input[type="radio"] { display: none; }
+        input[type="radio"]:checked + .toggle-label { border-color: var(--accent-primary); background-color: var(--bg-card); color: var(--accent-primary); }
+    </style>
+</head>
+<body class="text-medium">
+
+    <a href="/" style="color: var(--accent-primary); text-decoration: none; font-weight: bold;">&larr; Back to Home</a>
+    <h1 style="margin-bottom: 5px; color: var(--text-main);">Community Suggestions</h1>
+    <p style="color: var(--text-muted); margin-top: 0; margin-bottom: 20px;">Request a review or submit your own detailed draft for staff approval.</p>
+
+    <form action="/submit-suggestion" method="POST">
+        
+        <div class="toggle-container">
+            <input type="radio" id="req-basic" name="request_type" value="basic" checked onchange="toggleFormType()">
+            <label for="req-basic" class="toggle-label">Basic Request</label>
+
+            <input type="radio" id="req-detailed" name="request_type" value="detailed" onchange="toggleFormType()">
+            <label for="req-detailed" class="toggle-label">Detailed Submission</label>
+        </div>
+
+        <div class="form-section">
+            <h2>Core Info</h2>
+            <label>Category</label>
+            <select name="category" id="category-select" onchange="toggleScoringRubric()" required>
+                <option value="game">Video Game</option>
+                <option value="movie">Movie</option>
+                <option value="tv">TV Show</option>
+                <option value="book">Book</option>
+            </select>
+
+            <label>Title</label>
+            <input type="text" name="title" id="title-input" oninput="generateSlug()" required placeholder="e.g., Dune Part 2">
+            
+            <label>Release Year</label>
+            <input type="number" name="release_year" placeholder="e.g., 2024" required>
+
+            <div style="margin-bottom: 15px;">
+                <label>Tags (Comma separated)</label>
+                <input type="text" name="tags" placeholder="e.g., action, multiplayer, sci-fi">
+            </div>
+
+            <input type="hidden" name="slug" id="slug-input" required>
+        </div>
+
+        <div id="detailed-section" class="hidden">
+            <div class="form-section">
+                <label>Cover Image URL</label>
+                <input type="text" name="cover_image_url" placeholder="https://...">
+            </div>
+
+            <div class="form-section">
+                <h2>Your Suggested Score</h2>
+                <div id="rubric-game" class="score-grid">
+                    <div><label>Gameplay</label><input type="number" name="g_gameplay" min="1" max="10" value="5"></div>
+                    <div><label>Visuals</label><input type="number" name="g_visuals" min="1" max="10" value="5"></div>
+                    <div><label>Audio</label><input type="number" name="g_audio" min="1" max="10" value="5"></div>
+                    <div><label>Narrative</label><input type="number" name="g_narrative" min="1" max="10" value="5"></div>
+                    <div><label>Replayability</label><input type="number" name="g_replayability" min="1" max="10" value="5"></div>
+                </div>
+                <div id="rubric-media" class="score-grid hidden">
+                    <div><label>Narrative</label><input type="number" name="m_narrative" min="1" max="10" value="5"></div>
+                    <div><label>Performances</label><input type="number" name="m_performances" min="1" max="10" value="5"></div>
+                    <div><label>Cinematography</label><input type="number" name="m_cinematography" min="1" max="10" value="5"></div>
+                    <div><label>Audio/Score</label><input type="number" name="m_audio" min="1" max="10" value="5"></div>
+                    <div><label>Direction</label><input type="number" name="m_direction" min="1" max="10" value="5"></div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h2>The Review</h2>
+                <label>Main Content</label>
+                <textarea name="content" placeholder="Write your full review here..."></textarea>
+
+                <label>TLDR</label>
+                <textarea name="tldr" placeholder="A quick summary..." style="min-height: 60px;"></textarea>
+            </div>
+        </div>
+
+        <div class="btn-row">
+            <button type="submit" name="action" value="submit" class="btn-submit">Send to Staff</button>
+            <button type="submit" name="action" value="draft" class="btn-draft" id="draft-btn" style="display: none;">Save Draft (Max 4)</button>
+            <button type="button" class="btn-cancel" onclick="window.location.href='/'">Cancel</button>
+        </div>
+    </form>
+
+    <script>
+        function generateSlug() {
+            const title = document.getElementById('title-input').value;
+            const randomString = Math.random().toString(36).substring(2, 8); 
+            const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') + '-' + randomString;
+            document.getElementById('slug-input').value = slug;
+        }
+
+        function toggleScoringRubric() {
+            const category = document.getElementById('category-select').value;
+            document.getElementById('rubric-game').classList.toggle('hidden', category !== 'game');
+            document.getElementById('rubric-media').classList.toggle('hidden', category === 'game');
+        }
+
+        function toggleFormType() {
+            const isDetailed = document.getElementById('req-detailed').checked;
+            document.getElementById('detailed-section').classList.toggle('hidden', !isDetailed);
+            document.getElementById('draft-btn').style.display = isDetailed ? 'block' : 'none';
+        }
+
+        // Apply saved theme immediately
+        const savedTheme = localStorage.getItem('nord_theme');
+        if (savedTheme) document.documentElement.setAttribute('data-theme', savedTheme);
+    </script>
+</body>
+</html>

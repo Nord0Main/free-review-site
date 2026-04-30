@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Staff Inbox - Nord Reviews</title>
+    <style>
+        /* NEW: Text Scaling Rules */
+        body.text-small { font-size: 14px; }
+        body.text-medium { font-size: 16px; }
+        body.text-large { font-size: 20px; }
+
+        /* CORE THEME VARIABLES */
+        :root {
+            --bg-body: #121212; --bg-card: #1e1e1e; --bg-input: #2c2c2c;
+            --text-main: #ffffff; --text-muted: #cccccc; --border-color: #333333;
+            --accent-primary: #4CAF50; --accent-secondary: #2196F3;
+            --accent-warning: #ffeb3b; --accent-danger: #ff5252;
+        }
+
+        [data-theme="nord"] {
+            --bg-body: #161A22; --bg-card: #202531; --bg-input: #2C3342;
+            --text-main: #ECEFF4; --text-muted: #A3BECC; --border-color: #3B4559;
+            --accent-primary: #88C0D0; --accent-secondary: #81A1C1;
+            --accent-warning: #EBCB8B; --accent-danger: #BF616A;
+        }
+
+        [data-theme="grey-orange"] {
+            --bg-body: #1a1a1a; --bg-card: #262626; --bg-input: #333333;
+            --text-main: #f0f0f0; --text-muted: #999999; --border-color: #444444;
+            --accent-primary: #FF8C00; --accent-secondary: #FFB347;
+            --accent-warning: #FFD700; --accent-danger: #e63946;
+        }
+        
+        [data-theme="cyberpunk"] {
+            --bg-body: #0d0221; --bg-card: #19053b; --bg-input: #260a5e;
+            --text-main: #00ffcc; --text-muted: #ff77ff; --border-color: #ff00ff;
+            --accent-primary: #fcee0a; --accent-secondary: #00ffcc;
+            --accent-warning: #ff00ff; --accent-danger: #ff3300;
+        }
+
+        [data-theme="midnight"] {
+            --bg-body: #0b0c10; --bg-card: #12141a; --bg-input: #1a1d24;
+            --text-main: #e0e6ed; --text-muted: #8b9eb7; --border-color: #2b303b;
+            --accent-primary: #6d83f2; --accent-secondary: #4a5d96;
+            --accent-warning: #f2a65a; --accent-danger: #e06c75;
+        }
+
+        /* NEW: FOREST THEME */
+        [data-theme="forest"] {
+            --bg-body: #0d1a11; --bg-card: #142b1a; --bg-input: #1b3822;
+            --text-main: #e8f5e9; --text-muted: #a5d6a7; --border-color: #2e5939;
+            --accent-primary: #4caf50; --accent-secondary: #8bc34a;
+            --accent-warning: #ffb300; --accent-danger: #e53935;
+        }
+
+        /* NEW: BLOOD MOON THEME */
+        [data-theme="bloodmoon"] {
+            --bg-body: #140505; --bg-card: #240a0a; --bg-input: #330e0e;
+            --text-main: #ffebee; --text-muted: #ef9a9a; --border-color: #4a1515;
+            --accent-primary: #e53935; --accent-secondary: #ff5252;
+            --accent-warning: #ffb300; --accent-danger: #d32f2f;
+        }
+
+        /* NEW: SYNTHWAVE THEME */
+        [data-theme="synthwave"] {
+            --bg-body: #0b021a; --bg-card: #150433; --bg-input: #1f074d;
+            --text-main: #f0e6ff; --text-muted: #b388ff; --border-color: #3b0d8a;
+            --accent-primary: #f50057; --accent-secondary: #00e5ff;
+            --accent-warning: #ffea00; --accent-danger: #ff1744;
+        }
+
+        [data-theme="light"] {
+            --bg-body: #f4f4f9; --bg-card: #ffffff; --bg-input: #eeeeee;
+            --text-main: #222222; --text-muted: #666666; --border-color: #dddddd;
+            --accent-primary: #2e7d32; --accent-secondary: #1565c0;
+            --accent-warning: #f57f17; --accent-danger: #c62828;
+        }
+
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; background-color: var(--bg-body); color: var(--text-main); transition: 0.3s; }
+        .inbox-card { background-color: var(--bg-card); padding: 20px; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
+        .inbox-card.basic { border-left: 4px solid var(--accent-warning); }
+        .inbox-card.detailed { border-left: 4px solid var(--accent-secondary); }
+        .inbox-card.report { border-left: 4px solid var(--accent-danger); }
+        h2 { margin: 0 0 5px 0; color: var(--text-main); font-size: 1.2em; }
+        .meta { color: var(--text-muted); font-size: 0.9em; margin-bottom: 10px; }
+        .action-row { display: flex; gap: 10px; }
+        button, .btn { padding: 8px 15px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; text-decoration: none; font-size: 14px; transition: 0.2s; }
+        .btn:hover, button:hover { opacity: 0.8; }
+        .btn-approve { background-color: var(--accent-primary); color: white; }
+        .btn-edit { background-color: var(--accent-warning); color: black; }
+        .btn-reject { background-color: var(--accent-danger); color: white; }
+        .empty-state { text-align: center; padding: 50px; background-color: var(--bg-card); border-radius: 8px; color: var(--text-muted); border: 1px dashed var(--border-color); }
+        
+        /* Tab Styles */
+        .tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid var(--border-color); padding-bottom: 10px; }
+        .tab-btn { background-color: var(--bg-input); color: var(--text-muted); border: none; padding: 10px 20px; cursor: pointer; border-radius: 5px; font-size: 16px; transition: 0.2s; }
+        .tab-btn.active { background-color: var(--accent-primary); color: white; font-weight: bold; }
+        .tab-btn:hover:not(.active) { opacity: 0.8; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        
+        a.profile-link { color: var(--text-main); text-decoration: none; transition: 0.2s; }
+        a.profile-link:hover { text-decoration: underline; color: var(--accent-secondary); }
+        a.danger-link { color: var(--accent-danger); text-decoration: none; transition: 0.2s; }
+        a.danger-link:hover { text-decoration: underline; opacity: 0.8; }
+    </style>
+</head>
+<body class="text-medium">
+
+    <a href="/" style="color: var(--accent-primary); text-decoration: none; display: inline-block; margin-bottom: 20px; font-weight: bold;">&larr; Back to Home</a>
+    <h1 style="margin-bottom: 5px; color: var(--accent-warning);">Staff Inbox</h1>
+    <p style="color: var(--text-muted); margin-top: 0; margin-bottom: 20px;">Manage community submissions and TOS reports.</p>
+
+    <div class="tabs">
+        <button class="tab-btn active" id="btn-suggestions" onclick="switchTab('suggestions')">Suggestions</button>
+        <button class="tab-btn" id="btn-reports" onclick="switchTab('reports')">Reports</button>
+    </div>
+
+    <div id="tab-suggestions" class="tab-content active">
+        {% if reviews|length == 0 %}
+            <div class="empty-state">
+                <h2>Inbox Zero!</h2>
+                <p>No pending submissions from the community right now.</p>
+            </div>
+        {% else %}
+            {% for review in reviews %}
+                {% set is_basic = review.staff_score == 0 %}
+                <div class="inbox-card {{ 'basic' if is_basic else 'detailed' }}">
+                    <div>
+                        <h2>{{ review.title }} <span style="font-size: 0.7em; color: {{ 'var(--accent-warning)' if is_basic else 'var(--accent-secondary)' }}; font-weight: normal; margin-left: 10px;">[{{ 'BASIC REQUEST' if is_basic else 'DETAILED SUBMISSION' }}]</span></h2>
+                        <div class="meta">
+                            Category: {{ review.category | upper }} | Submitted by: 
+                            <strong style="color: var(--text-main);">
+                                {% if review.users %}
+                                    <a href="/user/{{ review.users.username }}" class="profile-link">{{ review.users.username }}</a>
+                                {% else %}
+                                    Unknown
+                                {% endif %}
+                            </strong>
+                        </div>
+                    </div>
+                    
+                    <div class="action-row">
+                        {% if is_basic %}
+                            <a href="/edit-review/{{ review.slug }}" class="btn btn-edit">Claim & Write</a>
+                        {% else %}
+                            <form action="/approve-review/{{ review.slug }}" method="POST" style="margin: 0;">
+                                <button type="submit" class="btn-approve">Approve</button>
+                            </form>
+                            <a href="/edit-review/{{ review.slug }}" class="btn btn-edit">Review Details</a>
+                        {% endif %}
+                        <form action="/delete-review/{{ review.slug }}" method="POST" onsubmit="return confirm('Reject and delete this submission permanently?');" style="margin: 0;">
+                            <button type="submit" class="btn-reject">Reject</button>
+                        </form>
+                    </div>
+                </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+
+    <div id="tab-reports" class="tab-content">
+        {% if reports|length == 0 %}
+            <div class="empty-state">
+                <h2>All Clear!</h2>
+                <p>No pending TOS violation reports to review.</p>
+            </div>
+        {% else %}
+            {% for report in reports %}
+                <div class="inbox-card report">
+                    <div style="width: 70%;">
+                        <h2>Reported User: <a href="/user/{{ report.reported_username }}" class="danger-link">{{ report.reported_username }}</a></h2>
+                        <div class="meta">
+                            Submitted by: 
+                            <strong style="color: var(--text-main);">
+                                {% if report.users %}
+                                    <a href="/user/{{ report.users.username }}" class="profile-link">{{ report.users.username }}</a>
+                                {% else %}
+                                    Unknown
+                                {% endif %}
+                            </strong> | Date: {{ report.created_at[:10] }}
+                        </div>
+                        <p style="margin: 5px 0 0 0; color: var(--text-muted); font-size: 0.95em;">"{{ report.reason }}"</p>
+                    </div>
+                    
+                    <div class="action-row" style="flex-wrap: wrap; gap: 10px;">
+                        <form action="/moderate-user/{{ report.reported_username }}" method="POST" style="margin: 0; display: flex; gap: 5px;">
+                            <input type="hidden" name="return_to" value="/inbox">
+                            <button type="submit" name="status" value="active" class="btn" style="background: var(--accent-primary); color: white;" title="Undo Restrictions">Active</button>
+                            <button type="submit" name="status" value="muted" class="btn" style="background: var(--accent-warning); color: black;" title="Block Commenting">Mute</button>
+                            <button type="submit" name="status" value="banned" class="btn" style="background: var(--accent-danger); color: white;" onsubmit="return confirm('Ban this user?');">Ban</button>
+                        </form>
+                        
+                        <form action="/resolve-report/{{ report.id }}" method="POST" style="margin: 0; border-left: 2px solid var(--border-color); padding-left: 10px;" onsubmit="return confirm('Mark this report as resolved?');">
+                            <button type="submit" class="btn" style="background: var(--bg-input); color: var(--text-muted); border: 1px solid var(--border-color);">Mark Resolved</button>
+                        </form>
+                    </div>
+                </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+
+    <script>
+        function switchTab(tabName) {
+            // Hide all contents
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            // Remove active state from all buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            
+            // Show selected content and activate button
+            document.getElementById('tab-' + tabName).classList.add('active');
+            document.getElementById('btn-' + tabName).classList.add('active');
+        }
+
+        // Apply saved theme immediately
+        const savedTheme = localStorage.getItem('nord_theme');
+        if (savedTheme) document.documentElement.setAttribute('data-theme', savedTheme);
+    </script>
+</body>
+</html>

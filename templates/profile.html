@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile</title>
+    <style>
+        /* NEW: Text Scaling Rules */
+        body.text-small { font-size: 14px; }
+        body.text-medium { font-size: 16px; }
+        body.text-large { font-size: 20px; }
+
+        /* CORE THEME VARIABLES */
+        :root {
+            --bg-body: #121212; --bg-card: #1e1e1e; --bg-input: #2c2c2c;
+            --text-main: #ffffff; --text-muted: #cccccc; --border-color: #333333;
+            --accent-primary: #4CAF50; --accent-secondary: #2196F3;
+            --accent-warning: #ffeb3b; --accent-danger: #ff5252;
+        }
+
+        [data-theme="nord"] {
+            --bg-body: #161A22; --bg-card: #202531; --bg-input: #2C3342;
+            --text-main: #ECEFF4; --text-muted: #A3BECC; --border-color: #3B4559;
+            --accent-primary: #88C0D0; --accent-secondary: #81A1C1;
+            --accent-warning: #EBCB8B; --accent-danger: #BF616A;
+        }
+
+        [data-theme="grey-orange"] {
+            --bg-body: #1a1a1a; --bg-card: #262626; --bg-input: #333333;
+            --text-main: #f0f0f0; --text-muted: #999999; --border-color: #444444;
+            --accent-primary: #FF8C00; --accent-secondary: #FFB347;
+            --accent-warning: #FFD700; --accent-danger: #e63946;
+        }
+
+        [data-theme="cyberpunk"] {
+            --bg-body: #0d0221; --bg-card: #19053b; --bg-input: #260a5e;
+            --text-main: #00ffcc; --text-muted: #ff77ff; --border-color: #ff00ff;
+            --accent-primary: #fcee0a; --accent-secondary: #00ffcc;
+            --accent-warning: #ff00ff; --accent-danger: #ff3300;
+        }
+
+        [data-theme="midnight"] {
+            --bg-body: #0b0c10; --bg-card: #12141a; --bg-input: #1a1d24;
+            --text-main: #e0e6ed; --text-muted: #8b9eb7; --border-color: #2b303b;
+            --accent-primary: #6d83f2; --accent-secondary: #4a5d96;
+            --accent-warning: #f2a65a; --accent-danger: #e06c75;
+        }
+
+        [data-theme="forest"] {
+            --bg-body: #0d1a11; --bg-card: #142b1a; --bg-input: #1b3822;
+            --text-main: #e8f5e9; --text-muted: #a5d6a7; --border-color: #2e5939;
+            --accent-primary: #4caf50; --accent-secondary: #8bc34a;
+            --accent-warning: #ffb300; --accent-danger: #e53935;
+        }
+
+        [data-theme="bloodmoon"] {
+            --bg-body: #140505; --bg-card: #240a0a; --bg-input: #330e0e;
+            --text-main: #ffebee; --text-muted: #ef9a9a; --border-color: #4a1515;
+            --accent-primary: #e53935; --accent-secondary: #ff5252;
+            --accent-warning: #ffb300; --accent-danger: #d32f2f;
+        }
+
+        [data-theme="synthwave"] {
+            --bg-body: #0b021a; --bg-card: #150433; --bg-input: #1f074d;
+            --text-main: #f0e6ff; --text-muted: #b388ff; --border-color: #3b0d8a;
+            --accent-primary: #f50057; --accent-secondary: #00e5ff;
+            --accent-warning: #ffea00; --accent-danger: #ff1744;
+        }
+
+        [data-theme="light"] {
+            --bg-body: #f4f4f9; --bg-card: #ffffff; --bg-input: #eeeeee;
+            --text-main: #222222; --text-muted: #666666; --border-color: #dddddd;
+            --accent-primary: #2e7d32; --accent-secondary: #1565c0;
+            --accent-warning: #f57f17; --accent-danger: #c62828;
+        }
+
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; background-color: var(--bg-body); color: var(--text-main); transition: background-color 0.3s, color 0.3s; }
+        .profile-header { display: flex; flex-direction: column; align-items: center; gap: 15px; margin-bottom: 30px; border-bottom: 1px solid var(--border-color); padding-bottom: 30px; text-align: center; }
+        .avatar { width: 120px; height: 120px; border-radius: 50%; background-color: var(--bg-input); object-fit: cover; border: 3px solid var(--accent-primary); }
+        .section { background-color: var(--bg-card); padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid var(--border-color); transition: background-color 0.3s, border-color 0.3s; }
+        h2 { color: var(--accent-primary); margin-top: 0; }
+        input[type="text"], select { width: 100%; padding: 10px; margin: 10px 0; background-color: var(--bg-input); border: 1px solid var(--border-color); color: var(--text-main); border-radius: 4px; box-sizing: border-box; }
+        button { background-color: var(--accent-primary); color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: bold; transition: opacity 0.2s; }
+        button:hover { opacity: 0.9; }
+        button:disabled { background-color: var(--bg-input); color: var(--text-muted); cursor: not-allowed; border: 1px solid var(--border-color); }
+        .top-five-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .header-top { display: flex; align-items: center; justify-content: space-between; width: 100%; margin-bottom: 20px; }
+    </style>
+</head>
+<body class="text-{{ user.text_size or 'medium' }}">
+
+    <div class="header-top">
+        <a href="/" style="color: var(--accent-primary); text-decoration: none; font-weight: bold;">&larr; Back to Home</a>
+        <span style="color: var(--text-muted);">Role: <strong style="color: {{ 'var(--accent-warning)' if user.role == 'owner' else 'var(--accent-secondary)' if user.role == 'admin' else 'var(--accent-primary)' }}">{{ user.role | upper }}</strong></span>
+    </div>
+
+    <div class="profile-header">
+        <div style="position: relative; display: inline-block;">
+            <img src="{{ user.profile_image_url or 'https://via.placeholder.com/150' }}" class="avatar">
+            <span style="position: absolute; bottom: 5px; right: 0px; background: var(--accent-warning); color: #121212; font-weight: bold; padding: 4px 8px; border-radius: 12px; font-size: 0.9em; border: 2px solid var(--bg-card); z-index: 2;">Lv.{{ user.level or 1 }}</span>
+        </div>
+        <div>
+            <h1 style="margin: 0 0 5px 0;">{{ user.username }}</h1>
+            <p style="color: var(--text-muted); margin: 0;">{{ user.email }}</p>
+        </div>
+        
+        <div style="margin-top: 15px; width: 100%; max-width: 400px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                <span style="font-weight: bold; color: var(--accent-warning);">{{ user.rank_name or 'Novice' }}</span>
+                <span style="color: var(--text-muted); font-size: 0.9em;">XP: {{ user.xp or 0 }}</span>
+            </div>
+            <div style="width: 100%; background-color: var(--bg-input); border-radius: 10px; overflow: hidden; border: 1px solid var(--border-color);">
+                <div style="height: 12px; background-color: var(--accent-warning); width: {{ (user.xp or 0) % 100 }}%;"></div>
+            </div>
+            <p style="font-size: 0.8em; color: var(--text-muted); text-align: center; margin-top: 5px;">
+                {{ 100 - ((user.xp or 0) % 100) }} XP to next level!
+            </p>
+        </div>
+
+        <form action="/update-profile-image" method="POST" style="margin-top: 15px; display: flex; gap: 10px; justify-content: center; width: 100%; max-width: 400px;">
+            <input type="text" name="profile_image_url" placeholder="Paste new image URL..." style="margin: 0; padding: 8px; flex-grow: 1;" required>
+            <button type="submit" style="background-color: var(--accent-secondary); padding: 8px 15px;">Update Avatar</button>
+        </form>
+    </div>
+
+    <div class="section">
+        <h2>Account Settings</h2>
+        
+        <label style="color: var(--text-muted); font-weight: bold;">Site Theme</label>
+        <select id="theme-selector" onchange="changeTheme()" style="margin-bottom: 20px;">
+            <option value="default">Dark (Default)</option>
+            <option value="nord">Nord (Cool)</option>
+            <option value="grey-orange">Forge (Grey/Orange)</option>
+            <option value="cyberpunk">Cyberpunk (Neon)</option>
+            <option value="midnight">Midnight (Deep Blue)</option>
+            <option value="forest">Forest (Deep Green)</option>
+            <option value="bloodmoon">Blood Moon (Crimson)</option>
+            <option value="synthwave">Synthwave (Retro)</option>
+            <option value="light">Light Mode</option>
+        </select>
+
+        <form action="/update-settings" method="POST">
+            <label style="color: var(--text-muted); font-weight: bold;">Mature Content (18+ / NSFW)</label>
+            <select name="show_mature" style="margin-bottom: 15px;">
+                <option value="false" {% if not user.show_mature %}selected{% endif %}>Hidden (Safe for Work)</option>
+                <option value="true" {% if user.show_mature %}selected{% endif %}>Visible (Show All Content)</option>
+            </select>
+            
+            <label style="color: var(--text-muted); font-weight: bold;">Language</label>
+            <select name="language" style="margin-bottom: 15px;">
+                <option value="en" {% if user.language == 'en' or not user.language %}selected{% endif %}>English</option>
+                <option value="es" disabled>Español (Coming Soon)</option>
+                <option value="fr" disabled>Français (Coming Soon)</option>
+                <option value="de" disabled>Deutsch (Coming Soon)</option>
+            </select>
+
+            <label style="color: var(--text-muted); font-weight: bold;">Text Size</label>
+            <select name="text_size" style="margin-bottom: 20px;">
+                <option value="small" {% if user.text_size == 'small' %}selected{% endif %}>Small</option>
+                <option value="medium" {% if user.text_size == 'medium' or not user.text_size %}selected{% endif %}>Medium (Default)</option>
+                <option value="large" {% if user.text_size == 'large' %}selected{% endif %}>Large</option>
+            </select>
+
+            <button type="submit">Save Preferences</button>
+        </form>
+    </div>
+
+    <div class="section">
+        <h2>Change Username</h2>
+        <p style="font-size: 0.9em; color: var(--text-muted);">Note: You can only change your name <strong>once</strong>.</p>
+        <form action="/update-username" method="POST">
+            <input type="text" name="new_username" placeholder="Enter new username" required {{ 'disabled' if user.has_changed_name }}>
+            <button type="submit" {{ 'disabled' if user.has_changed_name }}>
+                {{ 'Name Already Changed' if user.has_changed_name else 'Update Name' }}
+            </button>
+        </form>
+    </div>
+
+    <div class="section">
+        <h2>My Top 5 Favorites</h2>
+        <form action="/update-favorites" method="POST">
+            <div class="top-five-grid">
+                <div>
+                    <label style="font-weight: bold; color: var(--text-muted);">Top Games</label>
+                    <input type="text" name="top_games" value="{{ ', '.join(user.top_games) if user.top_games else '' }}" placeholder="Game 1, Game 2, Game 3...">
+                </div>
+                <div>
+                    <label style="font-weight: bold; color: var(--text-muted);">Top Movies/Shows</label>
+                    <input type="text" name="top_movies" value="{{ ', '.join(user.top_movies) if user.top_movies else '' }}" placeholder="Movie 1, Show 2...">
+                </div>
+            </div>
+            <button type="submit" style="margin-top: 15px;">Save Favorites</button>
+        </form>
+    </div>
+
+    <script>
+        // Theme Engine
+        function changeTheme() {
+            const theme = document.getElementById('theme-selector').value;
+            document.documentElement.setAttribute('data-theme', theme);
+            localStorage.setItem('nord_theme', theme);
+        }
+
+        // Check for saved theme on load
+        const savedTheme = localStorage.getItem('nord_theme');
+        if (savedTheme) {
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            document.getElementById('theme-selector').value = savedTheme;
+        }
+    </script>
+
+</body>
+</html>

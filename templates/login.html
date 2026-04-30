@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login / Sign Up</title>
+    <style>
+        /* NEW: Text Scaling Rules */
+        body.text-small { font-size: 14px; }
+        body.text-medium { font-size: 16px; }
+        body.text-large { font-size: 20px; }
+
+        /* CORE THEME VARIABLES */
+        :root {
+            --bg-body: #121212; --bg-card: #1e1e1e; --bg-input: #2c2c2c;
+            --text-main: #ffffff; --text-muted: #cccccc; --border-color: #333333;
+            --accent-primary: #4CAF50; --accent-secondary: #2196F3;
+            --accent-warning: #ffeb3b; --accent-danger: #ff5252;
+        }
+
+        [data-theme="nord"] {
+            --bg-body: #161A22; --bg-card: #202531; --bg-input: #2C3342;
+            --text-main: #ECEFF4; --text-muted: #A3BECC; --border-color: #3B4559;
+            --accent-primary: #88C0D0; --accent-secondary: #81A1C1;
+            --accent-warning: #EBCB8B; --accent-danger: #BF616A;
+        }
+
+        [data-theme="grey-orange"] {
+            --bg-body: #1a1a1a; --bg-card: #262626; --bg-input: #333333;
+            --text-main: #f0f0f0; --text-muted: #999999; --border-color: #444444;
+            --accent-primary: #FF8C00; --accent-secondary: #FFB347;
+            --accent-warning: #FFD700; --accent-danger: #e63946;
+        }
+        
+        [data-theme="cyberpunk"] {
+            --bg-body: #0d0221; --bg-card: #19053b; --bg-input: #260a5e;
+            --text-main: #00ffcc; --text-muted: #ff77ff; --border-color: #ff00ff;
+            --accent-primary: #fcee0a; --accent-secondary: #00ffcc;
+            --accent-warning: #ff00ff; --accent-danger: #ff3300;
+        }
+
+        [data-theme="midnight"] {
+            --bg-body: #0b0c10; --bg-card: #12141a; --bg-input: #1a1d24;
+            --text-main: #e0e6ed; --text-muted: #8b9eb7; --border-color: #2b303b;
+            --accent-primary: #6d83f2; --accent-secondary: #4a5d96;
+            --accent-warning: #f2a65a; --accent-danger: #e06c75;
+        }
+
+        /* NEW: FOREST THEME */
+        [data-theme="forest"] {
+            --bg-body: #0d1a11; --bg-card: #142b1a; --bg-input: #1b3822;
+            --text-main: #e8f5e9; --text-muted: #a5d6a7; --border-color: #2e5939;
+            --accent-primary: #4caf50; --accent-secondary: #8bc34a;
+            --accent-warning: #ffb300; --accent-danger: #e53935;
+        }
+
+        /* NEW: BLOOD MOON THEME */
+        [data-theme="bloodmoon"] {
+            --bg-body: #140505; --bg-card: #240a0a; --bg-input: #330e0e;
+            --text-main: #ffebee; --text-muted: #ef9a9a; --border-color: #4a1515;
+            --accent-primary: #e53935; --accent-secondary: #ff5252;
+            --accent-warning: #ffb300; --accent-danger: #d32f2f;
+        }
+
+        /* NEW: SYNTHWAVE THEME */
+        [data-theme="synthwave"] {
+            --bg-body: #0b021a; --bg-card: #150433; --bg-input: #1f074d;
+            --text-main: #f0e6ff; --text-muted: #b388ff; --border-color: #3b0d8a;
+            --accent-primary: #f50057; --accent-secondary: #00e5ff;
+            --accent-warning: #ffea00; --accent-danger: #ff1744;
+        }
+
+        [data-theme="light"] {
+            --bg-body: #f4f4f9; --bg-card: #ffffff; --bg-input: #eeeeee;
+            --text-main: #222222; --text-muted: #666666; --border-color: #dddddd;
+            --accent-primary: #2e7d32; --accent-secondary: #1565c0;
+            --accent-warning: #f57f17; --accent-danger: #c62828;
+        }
+
+        body { font-family: Arial, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background-color: var(--bg-body); color: var(--text-main); transition: 0.3s; }
+        .auth-container { background-color: var(--bg-card); padding: 30px; border-radius: 8px; border: 1px solid var(--border-color); width: 100%; max-width: 400px; }
+        h2 { text-align: center; color: var(--accent-primary); margin-top: 0; }
+        input { width: 100%; padding: 10px; margin: 10px 0; background-color: var(--bg-input); border: 1px solid var(--border-color); color: var(--text-main); border-radius: 4px; box-sizing: border-box; }
+        button { width: 100%; padding: 10px; background-color: var(--accent-primary); color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; font-weight: bold; margin-top: 10px; transition: 0.2s; }
+        button:hover { opacity: 0.9; }
+        .toggle-text { text-align: center; margin-top: 15px; font-size: 0.9em; color: var(--text-muted); cursor: pointer; }
+        .toggle-text:hover { color: var(--text-main); text-decoration: underline; }
+        .error-msg { color: var(--accent-danger); text-align: center; margin-bottom: 10px; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body class="text-medium">
+
+    <div class="auth-container">
+        {% if error %}
+            <div class="error-msg">{{ error }}</div>
+        {% endif %}
+
+        <form id="login-form" action="/login" method="POST">
+            <h2>Welcome Back</h2>
+            <input type="email" name="email" placeholder="Email Address" required>
+            <input type="password" name="password" placeholder="Password" required>
+            <button type="submit">Login</button>
+            <div class="toggle-text" onclick="toggleForms()">Need an account? Sign up here.</div>
+        </form>
+
+        <form id="signup-form" action="/signup" method="POST" class="hidden">
+            <h2>Create Account</h2>
+            <input type="text" name="username" placeholder="Display Name (Username)" required>
+            <input type="email" name="email" placeholder="Email Address" required>
+            <input type="password" name="password" placeholder="Password" required>
+            <button type="submit">Sign Up</button>
+            <div class="toggle-text" onclick="toggleForms()">Already have an account? Login here.</div>
+        </form>
+        
+        <div style="text-align: center; margin-top: 20px;">
+            <a href="/" style="color: var(--accent-primary); text-decoration: none; font-weight: bold;">&larr; Back to Home</a>
+        </div>
+    </div>
+
+    <script>
+        function toggleForms() {
+            const loginForm = document.getElementById('login-form');
+            const signupForm = document.getElementById('signup-form');
+            loginForm.classList.toggle('hidden');
+            signupForm.classList.toggle('hidden');
+        }
+
+        // Apply saved theme immediately
+        const savedTheme = localStorage.getItem('nord_theme');
+        if (savedTheme) document.documentElement.setAttribute('data-theme', savedTheme);
+    </script>
+
+</body>
+</html>

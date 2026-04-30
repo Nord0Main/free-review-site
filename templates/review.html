@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ seo.title }} - Nord Reviews</title>
+
+    <meta property="og:site_name" content="Nord Reviews">
+    <meta property="og:title" content="{{ seo.title }}">
+    <meta property="og:description" content="{{ seo.tldr }}">
+    <meta property="og:image" content="{{ seo.cover_image_url or 'https://via.placeholder.com/1200x630/1e1e1e/4CAF50?text=Nord+Reviews' }}">
+    <meta name="twitter:card" content="summary_large_image">
+
+    <style>
+        /* NEW: Text Scaling Rules */
+        body.text-small { font-size: 14px; }
+        body.text-medium { font-size: 16px; }
+        body.text-large { font-size: 20px; }
+
+        /* CORE THEME VARIABLES */
+        :root {
+            --bg-body: #121212; --bg-card: #1e1e1e; --bg-input: #2c2c2c;
+            --text-main: #ffffff; --text-muted: #cccccc; --border-color: #333333;
+            --accent-primary: #4CAF50; --accent-secondary: #2196F3;
+            --accent-warning: #ffeb3b; --accent-danger: #ff5252;
+        }
+
+        [data-theme="nord"] {
+            --bg-body: #161A22; --bg-card: #202531; --bg-input: #2C3342;
+            --text-main: #ECEFF4; --text-muted: #A3BECC; --border-color: #3B4559;
+            --accent-primary: #88C0D0; --accent-secondary: #81A1C1;
+            --accent-warning: #EBCB8B; --accent-danger: #BF616A;
+        }
+
+        [data-theme="grey-orange"] {
+            --bg-body: #1a1a1a; --bg-card: #262626; --bg-input: #333333;
+            --text-main: #f0f0f0; --text-muted: #999999; --border-color: #444444;
+            --accent-primary: #FF8C00; --accent-secondary: #FFB347;
+            --accent-warning: #FFD700; --accent-danger: #e63946;
+        }
+        
+        [data-theme="cyberpunk"] {
+            --bg-body: #0d0221; --bg-card: #19053b; --bg-input: #260a5e;
+            --text-main: #00ffcc; --text-muted: #ff77ff; --border-color: #ff00ff;
+            --accent-primary: #fcee0a; --accent-secondary: #00ffcc;
+            --accent-warning: #ff00ff; --accent-danger: #ff3300;
+        }
+
+        [data-theme="midnight"] {
+            --bg-body: #0b0c10; --bg-card: #12141a; --bg-input: #1a1d24;
+            --text-main: #e0e6ed; --text-muted: #8b9eb7; --border-color: #2b303b;
+            --accent-primary: #6d83f2; --accent-secondary: #4a5d96;
+            --accent-warning: #f2a65a; --accent-danger: #e06c75;
+        }
+
+        [data-theme="forest"] {
+            --bg-body: #0d1a11; --bg-card: #142b1a; --bg-input: #1b3822;
+            --text-main: #e8f5e9; --text-muted: #a5d6a7; --border-color: #2e5939;
+            --accent-primary: #4caf50; --accent-secondary: #8bc34a;
+            --accent-warning: #ffb300; --accent-danger: #e53935;
+        }
+
+        [data-theme="bloodmoon"] {
+            --bg-body: #140505; --bg-card: #240a0a; --bg-input: #330e0e;
+            --text-main: #ffebee; --text-muted: #ef9a9a; --border-color: #4a1515;
+            --accent-primary: #e53935; --accent-secondary: #ff5252;
+            --accent-warning: #ffb300; --accent-danger: #d32f2f;
+        }
+
+        [data-theme="synthwave"] {
+            --bg-body: #0b021a; --bg-card: #150433; --bg-input: #1f074d;
+            --text-main: #f0e6ff; --text-muted: #b388ff; --border-color: #3b0d8a;
+            --accent-primary: #f50057; --accent-secondary: #00e5ff;
+            --accent-warning: #ffea00; --accent-danger: #ff1744;
+        }
+
+        [data-theme="light"] {
+            --bg-body: #f4f4f9; --bg-card: #ffffff; --bg-input: #eeeeee;
+            --text-main: #222222; --text-muted: #666666; --border-color: #dddddd;
+            --accent-primary: #2e7d32; --accent-secondary: #1565c0;
+            --accent-warning: #f57f17; --accent-danger: #c62828;
+        }
+
+        body { font-family: Arial, sans-serif; max-width: 900px; margin: 0 auto; padding: 20px; background-color: var(--bg-body); color: var(--text-main); transition: 0.3s; }
+        
+        a.back-btn { display: inline-block; color: var(--accent-primary); text-decoration: none; font-weight: bold; font-size: 1.1em; }
+        a.back-btn:hover { text-decoration: underline; }
+        
+        .review-header { border-bottom: 1px solid var(--border-color); padding-bottom: 15px; margin-bottom: 20px; }
+        h1 { color: var(--accent-primary); margin-bottom: 5px; display: flex; align-items: center; flex-wrap: wrap; gap: 10px; }
+        .rating { font-size: 1.1em; font-weight: bold; color: var(--accent-warning); margin-bottom: 10px; }
+        .content { line-height: 1.7; font-size: 1.1em; background: var(--bg-card); padding: 25px; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 30px; }
+        .cover-image { width: 100%; max-height: 450px; object-fit: cover; border-radius: 8px; margin-bottom: 20px; border: 1px solid var(--border-color); }
+        
+        /* Staff Control Panel */
+        .admin-controls { background-color: rgba(255, 82, 82, 0.1); border: 1px solid var(--accent-danger); padding: 15px; border-radius: 5px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; margin-bottom: 20px; }
+        .staff-label { color: var(--accent-danger); font-weight: bold; margin: 0; }
+        .action-buttons { display: flex; gap: 10px; align-items: center; }
+        .action-buttons form { margin: 0; }
+        
+        .btn-delete { background-color: var(--accent-danger); color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        .btn-flag { background-color: var(--accent-warning); color: black; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        .btn-edit { background-color: var(--accent-secondary); color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; text-decoration: none; display: inline-block; box-sizing: border-box; }
+
+        /* Score Split UI */
+        .score-split { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 30px 0; background-color: var(--bg-card); padding: 20px; border-radius: 8px; border: 1px solid var(--border-color); }
+        .score-col { padding: 0 10px; }
+        .score-col:first-child { border-right: 1px solid var(--border-color); }
+        .score-col h3 { margin-top: 0; padding-bottom: 10px; border-bottom: 1px solid var(--border-color); font-size: 1.1em; color: var(--accent-primary); }
+        .score-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; font-size: 0.95em; }
+        .score-row input { width: 60px; padding: 8px; background-color: var(--bg-input); border: 1px solid var(--border-color); color: var(--text-main); border-radius: 4px; text-align: center; font-weight: bold; }
+        .btn-vote { width: 100%; background-color: var(--accent-secondary); color: white; border: none; padding: 12px; border-radius: 4px; cursor: pointer; font-weight: bold; margin-top: 15px; transition: 0.2s; }
+        .btn-vote:hover { opacity: 0.8; }
+
+        /* Comments UI */
+        .comments-wrapper { background: var(--bg-card); padding: 20px; border-radius: 8px; border: 1px solid var(--border-color); margin-top: 30px; }
+        .comment-input-box { display: flex; flex-direction: column; gap: 10px; margin-bottom: 30px; }
+        .comment-textarea { width: 100%; background: var(--bg-body); border: 1px solid var(--border-color); color: var(--text-main); padding: 15px; border-radius: 8px; resize: vertical; min-height: 80px; font-family: inherit; box-sizing: border-box; }
+        .comment-btn { background: var(--accent-secondary); color: white; border: none; padding: 10px 20px; border-radius: 5px; font-weight: bold; cursor: pointer; align-self: flex-start; transition: 0.2s; }
+        
+        .comment-card { display: flex; gap: 15px; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 20px; }
+        .comment-card:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+        .comment-avatar-wrapper { position: relative; width: 45px; height: 45px; flex-shrink: 0; }
+        .comment-avatar { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 1px solid var(--border-color); }
+        .comment-badge { position: absolute; bottom: -5px; right: -5px; background: var(--accent-warning); color: #121212; font-weight: bold; padding: 1px 4px; border-radius: 6px; font-size: 0.6em; border: 1px solid var(--bg-card); }
+
+        /* Modal Styles */
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.8); }
+        .modal-content { background-color: var(--bg-card); margin: 15% auto; padding: 20px; border: 1px solid var(--accent-danger); border-radius: 8px; width: 90%; max-width: 500px; box-sizing: border-box; }
+        .close-btn { color: var(--text-muted); float: right; font-size: 28px; font-weight: bold; cursor: pointer; line-height: 1; }
+        .close-btn:hover { color: var(--text-main); }
+
+        @media (max-width: 650px) {
+            .score-split { grid-template-columns: 1fr; gap: 0; }
+            .score-col:first-child { border-right: none; border-bottom: 2px solid var(--border-color); padding-bottom: 25px; margin-bottom: 25px; }
+            .admin-controls { flex-direction: column; align-items: stretch; text-align: center; }
+            .action-buttons { flex-direction: column; align-items: stretch; width: 100%; }
+            .action-buttons form, .action-buttons a, .action-buttons button { width: 100%; text-align: center; box-sizing: border-box; }
+            .staff-label { margin-bottom: 10px; }
+        }
+    </style>
+</head>
+<body class="text-{{ text_size or 'medium' }}">
+
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; margin-bottom: 20px;">
+        <a href="/" class="back-btn">&larr; Back to Home</a>
+    </div>
+
+    {% if user_role in ['owner', 'admin'] %}
+        <div class="admin-controls">
+            <span class="staff-label">STAFF CONTROLS</span>
+            <div class="action-buttons">
+                <a href="/edit-review/{{ slug }}" class="btn-edit">Edit</a>
+                <form action="/toggle-controversy/{{ slug }}" method="POST">
+                    <button type="submit" class="btn-flag">Toggle Flag</button>
+                </form>
+                <form action="/delete-review/{{ slug }}" method="POST" onsubmit="return confirm('Are you sure you want to PERMANENTLY delete this review?');">
+                    <button type="submit" class="btn-delete">Delete</button>
+                </form>
+            </div>
+        </div>
+    {% endif %}
+
+    <div id="review-container">
+        <p>Loading review...</p>
+    </div>
+
+    <div class="comments-wrapper">
+        <h2 style="margin-top: 0; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; color: var(--accent-primary);">Community Comments</h2>
+        
+        {% if session.get('user_id') %}
+        <form action="/submit-comment" method="POST" class="comment-input-box">
+            <input type="hidden" name="slug" value="{{ slug }}">
+            <textarea name="content" class="comment-textarea" placeholder="Add a public comment..." required></textarea>
+            <button type="submit" class="comment-btn">Post Comment</button>
+        </form>
+        {% else %}
+        <p style="color: var(--text-muted); margin-bottom: 30px;"><a href="/login" style="color: var(--accent-secondary); text-decoration: none; font-weight: bold;">Log in</a> to join the conversation.</p>
+        {% endif %}
+        
+        <div id="comments-list">
+            </div>
+    </div>
+
+    <div id="reportModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeReportModal()">&times;</span>
+            <h2 style="color: var(--accent-danger); margin-top: 0;">Report User: <span id="modal-reported-name"></span></h2>
+            <p style="color: var(--text-muted); font-size: 0.9em;">Describe how this user violated the Terms of Service.</p>
+            
+            <form action="/submit-report" method="POST">
+                <input type="hidden" name="slug" value="{{ slug }}">
+                <input type="hidden" name="reported_username" id="input-reported-name">
+                <textarea name="reason" placeholder="Enter reason here..." style="width: 100%; min-height: 100px; margin-bottom: 15px; background-color: var(--bg-input); color: var(--text-main); border: 1px solid var(--border-color); padding: 10px; border-radius: 4px; box-sizing: border-box;" required></textarea>
+                <button type="submit" style="background-color: var(--accent-danger); color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: bold; width: 100%;">Submit Report</button>
+            </form>
+
+            {% if user_role in ['owner', 'admin', 'moderator'] %}
+            <div style="margin-top: 20px; padding-top: 15px; border-top: 1px dashed var(--border-color);">
+                <p style="color: var(--accent-warning); font-weight: bold; margin-top: 0; margin-bottom: 10px; font-size: 0.9em;">STAFF QUICK ACTIONS</p>
+                <form id="quick-mod-form" action="" method="POST" style="display: flex; gap: 10px; margin: 0;">
+                    <input type="hidden" name="return_to" value="/review/{{ slug }}">
+                    
+                    {% if user_role in ['owner', 'admin'] %}
+                        <button type="submit" name="status" value="active" onclick="setModTarget()" style="flex: 1; background: var(--accent-primary); border: none; padding: 8px; border-radius: 4px; color: white; cursor: pointer; font-weight: bold;">Active</button>
+                    {% endif %}
+                    
+                    <button type="submit" name="status" value="muted" onclick="setModTarget()" style="flex: 1; background: var(--accent-warning); border: none; padding: 8px; border-radius: 4px; color: black; cursor: pointer; font-weight: bold;">Mute</button>
+                    
+                    {% if user_role in ['owner', 'admin'] %}
+                        <button type="submit" name="status" value="banned" onclick="setModTarget()" style="flex: 1; background: var(--accent-danger); border: none; padding: 8px; border-radius: 4px; color: white; cursor: pointer; font-weight: bold;">Ban</button>
+                    {% endif %}
+                </form>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <script>
+        // Apply saved theme immediately
+        const savedTheme = localStorage.getItem('nord_theme');
+        if (savedTheme) document.documentElement.setAttribute('data-theme', savedTheme);
+
+        const currentSlug = "{{ slug }}";
+        const isLoggedIn = {% if session.get('user_id') %}true{% else %}false{% endif %};
+        const currentUserId = "{{ current_user_id or '' }}";
+        const currentUserRole = "{{ user_role }}";
+
+        async function loadReview() {
+            const container = document.getElementById('review-container');
+            
+            try {
+                const response = await fetch(`/api/review/${currentSlug}`);
+                const result = await response.json();
+
+                if (result.status === 'success') {
+                    const review = result.data;
+                    document.title = review.title + " - Nord Reviews";
+                    
+                    const isDraft = review.status === 'draft' ? '<span style="color: var(--accent-danger); border: 1px solid var(--accent-danger); padding: 2px 8px; border-radius: 4px; font-size: 0.6em; vertical-align: middle; margin-right: 10px;">DRAFT</span>' : '';
+                    const coverImg = review.cover_image_url ? `<img src="${review.cover_image_url}" class="cover-image">` : '';
+                    
+                    const authorName = review.users && review.users.username ? review.users.username : 'Staff';
+                    const authorLevel = review.users && review.users.level ? review.users.level : 1;
+                    const authorImg = review.users && review.users.profile_image_url ? review.users.profile_image_url : 'https://via.placeholder.com/45';
+                    
+                    const controTag = review.is_controversial ? '<span style="color: var(--accent-warning); font-size: 0.6em; background: var(--bg-input); padding: 2px 8px; border-radius: 4px; border: 1px solid var(--accent-warning); margin-left: 10px; vertical-align: middle;" title="Controversial Topic Context Notice">⚠️ Context Notice</span>' : '';
+                    const commScoreDisplay = review.vote_count > 0 ? `${review.community_score} / 50 <span style="font-size: 0.8em; color: var(--text-muted);">(${review.vote_count} votes)</span>` : 'TBD / 50';
+
+                    let staffScoresHtml = '';
+                    let votingFormHtml = '';
+
+                    if (review.category === 'game') {
+                        staffScoresHtml = `
+                            <div class="score-row"><span style="color: var(--text-muted);">Gameplay:</span> <strong style="color: var(--text-main);">${review.granular_scores.gameplay || 0}/10</strong></div>
+                            <div class="score-row"><span style="color: var(--text-muted);">Visuals:</span> <strong style="color: var(--text-main);">${review.granular_scores.visuals || 0}/10</strong></div>
+                            <div class="score-row"><span style="color: var(--text-muted);">Audio:</span> <strong style="color: var(--text-main);">${review.granular_scores.audio || 0}/10</strong></div>
+                            <div class="score-row"><span style="color: var(--text-muted);">Narrative:</span> <strong style="color: var(--text-main);">${review.granular_scores.narrative || 0}/10</strong></div>
+                            <div class="score-row"><span style="color: var(--text-muted);">Replayability:</span> <strong style="color: var(--text-main);">${review.granular_scores.replayability || 0}/10</strong></div>
+                        `;
+                        votingFormHtml = `
+                            <div class="score-row"><label style="color: var(--text-muted);">Gameplay:</label> <input type="number" name="g_gameplay" min="1" max="10" value="5" required></div>
+                            <div class="score-row"><label style="color: var(--text-muted);">Visuals:</label> <input type="number" name="g_visuals" min="1" max="10" value="5" required></div>
+                            <div class="score-row"><label style="color: var(--text-muted);">Audio:</label> <input type="number" name="g_audio" min="1" max="10" value="5" required></div>
+                            <div class="score-row"><label style="color: var(--text-muted);">Narrative:</label> <input type="number" name="g_narrative" min="1" max="10" value="5" required></div>
+                            <div class="score-row"><label style="color: var(--text-muted);">Replayability:</label> <input type="number" name="g_replayability" min="1" max="10" value="5" required></div>
+                        `;
+                    } else {
+                        staffScoresHtml = `
+                            <div class="score-row"><span style="color: var(--text-muted);">Narrative:</span> <strong style="color: var(--text-main);">${review.granular_scores.narrative || 0}/10</strong></div>
+                            <div class="score-row"><span style="color: var(--text-muted);">Performances:</span> <strong style="color: var(--text-main);">${review.granular_scores.performances || 0}/10</strong></div>
+                            <div class="score-row"><span style="color: var(--text-muted);">Cinematography:</span> <strong style="color: var(--text-main);">${review.granular_scores.cinematography || 0}/10</strong></div>
+                            <div class="score-row"><span style="color: var(--text-muted);">Audio/Score:</span> <strong style="color: var(--text-main);">${review.granular_scores.audio || 0}/10</strong></div>
+                            <div class="score-row"><span style="color: var(--text-muted);">Direction/Editing:</span> <strong style="color: var(--text-main);">${review.granular_scores.direction || 0}/10</strong></div>
+                        `;
+                        votingFormHtml = `
+                            <div class="score-row"><label style="color: var(--text-muted);">Narrative:</label> <input type="number" name="m_narrative" min="1" max="10" value="5" required></div>
+                            <div class="score-row"><label style="color: var(--text-muted);">Performances:</label> <input type="number" name="m_performances" min="1" max="10" value="5" required></div>
+                            <div class="score-row"><label style="color: var(--text-muted);">Cinematography:</label> <input type="number" name="m_cinematography" min="1" max="10" value="5" required></div>
+                            <div class="score-row"><label style="color: var(--text-muted);">Audio/Score:</label> <input type="number" name="m_audio" min="1" max="10" value="5" required></div>
+                            <div class="score-row"><label style="color: var(--text-muted);">Direction:</label> <input type="number" name="m_direction" min="1" max="10" value="5" required></div>
+                        `;
+                    }
+
+                    let communityRightSide = '';
+                    if (isLoggedIn) {
+                        communityRightSide = `
+                            <form action="/submit-vote" method="POST">
+                                <input type="hidden" name="slug" value="${review.slug}">
+                                <input type="hidden" name="category" value="${review.category}">
+                                ${votingFormHtml}
+                                <button type="submit" class="btn-vote">Submit Vote</button>
+                            </form>
+                        `;
+                    } else {
+                        communityRightSide = `
+                            <div style="text-align: center; margin-top: 40px;">
+                                <p style="color: var(--text-muted);"><em>Sign in to cast your vote and influence the Community Score!</em></p>
+                                <a href="/login" style="color: var(--accent-secondary); text-decoration: none; border: 1px solid var(--accent-secondary); padding: 8px 20px; border-radius: 5px; display: inline-block; margin-top: 10px; font-weight: bold;">Login</a>
+                            </div>
+                        `;
+                    }
+
+                    container.innerHTML = `
+                        ${coverImg}
+                        <div class="review-header">
+                            <h1>${isDraft}${review.title} <span style="font-size: 0.6em; color: var(--text-muted); font-weight: normal;">(${review.release_year || 'TBA'})</span> ${controTag}</h1>
+                            
+                            <div class="rating" style="display: flex; gap: 20px; flex-wrap: wrap; margin-top: 15px;">
+                                <span>Staff Score: ${review.staff_score || 0} / 50</span>
+                                <span style="color: var(--text-muted); font-weight: normal;">Community Score: ${commScoreDisplay}</span>
+                            </div>
+                            
+                            <div style="display: flex; align-items: center; gap: 15px; margin-top: 20px;">
+                                <div class="comment-avatar-wrapper">
+                                    <a href="/user/${authorName}"><img src="${authorImg}" class="comment-avatar"></a>
+                                    <span class="comment-badge">Lv.${authorLevel}</span>
+                                </div>
+                                <div>
+                                    <span style="color: var(--text-muted); display: block; font-size: 0.95em;">Category: <strong style="color: var(--text-main);">${review.category.toUpperCase()}</strong></span>
+                                    <small style="color: var(--text-muted);">
+                                        Posted by <a href="/user/${authorName}" style="color: var(--text-main); font-weight: bold; text-decoration: none;">${authorName}</a> on ${new Date(review.created_at).toLocaleDateString()}
+                                        ${isLoggedIn ? ` | <a href="#" onclick="openReportModal('${authorName}')" style="color: var(--accent-danger); text-decoration: none;">&#9872; Report User</a>` : ''}
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="content">
+                            <p>${review.content.replace(/\n/g, '<br>')}</p>
+                        </div>
+                        
+                        <div class="score-split">
+                            <div class="score-col">
+                                <h3>Staff Breakdown</h3>
+                                ${staffScoresHtml}
+                            </div>
+                            <div class="score-col">
+                                <h3 style="color: var(--accent-secondary);">Community Voting</h3>
+                                ${communityRightSide}
+                            </div>
+                        </div>
+                    `;
+
+                    // Render Comments with True Nesting & Level Sorting
+                    const commentsContainer = document.getElementById('comments-list');
+                    if (!review.comments || review.comments.length === 0) {
+                        commentsContainer.innerHTML = `<p style="color: var(--text-muted); text-align: center;">No comments yet. Be the first to share your thoughts!</p>`;
+                    } else {
+                        let html = '';
+                        
+                        // Recursive function to build nested threads
+                        function buildThread(parentId, depth) {
+                            const children = review.comments.filter(c => c.parent_id === parentId);
+                            
+                            if (parentId === null) {
+                                // ROOT COMMENTS: Sort by Level (Highest First), tie-break by Upvotes
+                                children.sort((a, b) => {
+                                    const levelA = a.users && a.users.level ? a.users.level : 1;
+                                    const levelB = b.users && b.users.level ? b.users.level : 1;
+                                    if (levelB !== levelA) return levelB - levelA; // Highest Level wins
+                                    
+                                    const upA = a.upvotes || 0;
+                                    const upB = b.upvotes || 0;
+                                    if (upB !== upA) return upB - upA; // Most Upvotes wins tied levels
+                                    
+                                    return new Date(b.created_at) - new Date(a.created_at); // Newest wins tied upvotes
+                                });
+                            } else {
+                                // REPLIES: Sort chronologically (Oldest first) so the conversation flows naturally
+                                children.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+                            }
+                            
+                            children.forEach(child => {
+                                // Cap the visual indentation at depth 3 so it doesn't squish too far right on mobile
+                                const visualDepth = Math.min(depth, 3); 
+                                html += buildCommentHTML(child, visualDepth > 0, review.slug, visualDepth);
+                                
+                                // Recursively find replies to THIS child
+                                buildThread(child.id, depth + 1);
+                            });
+                        }
+
+                        // Start the thread with the top-level parent comments (parent_id is null)
+                        buildThread(null, 0);
+                        
+                        commentsContainer.innerHTML = html;
+                    }
+
+                } else {
+                    container.innerHTML = '<h1>Review not found</h1><p>Looks like this page does not exist.</p>';
+                }
+            } catch (error) {
+                container.innerHTML = '<p>Error loading the review.</p>';
+            }
+        }
+
+        // Helper function to build the HTML for a single comment or reply
+        function buildCommentHTML(c, isReply, reviewSlug, depth = 0) {
+            const cAuthor = c.users && c.users.username ? c.users.username : 'Unknown';
+            const cAvatar = c.users && c.users.profile_image_url ? c.users.profile_image_url : 'https://via.placeholder.com/45';
+            const cLevel = c.users && c.users.level ? c.users.level : 1;
+            const cRank = c.users && c.users.rank_name ? c.users.rank_name : 'Novice';
+            const cId = c.id;
+            
+            const isAuthor = currentUserId === c.author_id;
+            const isAdmin = currentUserRole === 'owner' || currentUserRole === 'admin';
+            
+            // Dynamic indentation based on depth
+            const marginSize = depth * 30; // 30px indent per depth level
+            const replyStyle = isReply ? `margin-left: ${marginSize}px; border-left: 2px solid var(--border-color); padding-left: 15px;` : "";
+            const avatarSize = isReply ? "35px" : "45px";
+            
+            let actionButtons = '';
+            if (isLoggedIn) {
+                actionButtons += `
+                    <div style="display: flex; gap: 15px; margin-top: 10px; align-items: center;">
+                        <form action="/vote-comment/${cId}" method="POST" style="margin: 0;">
+                            <input type="hidden" name="vote_type" value="up">
+                            <button type="submit" style="background: none; border: none; color: var(--accent-primary); cursor: pointer; padding: 0; font-size: 1.1em; font-weight: bold;" title="Like">👍 ${c.upvotes || 0}</button>
+                        </form>
+                        <form action="/vote-comment/${cId}" method="POST" style="margin: 0;">
+                            <input type="hidden" name="vote_type" value="down">
+                            <button type="submit" style="background: none; border: none; color: var(--accent-danger); cursor: pointer; padding: 0; font-size: 1.1em; font-weight: bold;" title="Dislike">👎 ${c.downvotes || 0}</button>
+                        </form>
+                        <button onclick="toggleReplyBox('${cId}')" style="background: none; border: none; color: var(--accent-secondary); cursor: pointer; padding: 0; font-size: 0.85em; text-decoration: underline;">Reply</button>
+                `;
+                
+                if (isAuthor || isAdmin) {
+                    if (isAuthor) actionButtons += `<button onclick="toggleEditComment('${cId}')" style="background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 0; font-size: 0.85em; text-decoration: underline;">Edit</button>`;
+                    actionButtons += `
+                        <form action="/delete-comment/${cId}" method="POST" style="margin: 0;" onsubmit="return confirm('Delete this comment?');">
+                            <input type="hidden" name="slug" value="${reviewSlug}">
+                            <button type="submit" style="background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 0; font-size: 0.85em; text-decoration: underline;">Delete</button>
+                        </form>
+                    `;
+                }
+                actionButtons += `</div>`;
+            }
+
+            return `
+                <div class="comment-card" style="${replyStyle}">
+                    <div class="comment-avatar-wrapper" style="width: ${avatarSize}; height: ${avatarSize};">
+                        <a href="/user/${cAuthor}"><img src="${cAvatar}" class="comment-avatar"></a>
+                        <span class="comment-badge">Lv.${cLevel}</span>
+                    </div>
+                    <div style="flex-grow: 1;">
+                        <div style="margin-bottom: 5px;">
+                            <a href="/user/${cAuthor}" style="color: var(--text-main); font-weight: bold; text-decoration: none;">${cAuthor}</a> 
+                            <span style="color: var(--text-muted); font-size: 0.8em; margin-left: 5px;">• ${cRank}</span>
+                            <span style="color: var(--text-muted); font-size: 0.8em; margin-left: 10px;">${new Date(c.created_at).toLocaleDateString()}</span>
+                            ${isLoggedIn && !isAuthor ? `<a href="#" onclick="openReportModal('${cAuthor}')" style="color: var(--accent-danger); text-decoration: none; font-size: 0.8em; margin-left: 10px;" title="Report Comment">&#9872;</a>` : ''}
+                        </div>
+                        
+                        <div id="comment-display-${cId}" style="color: var(--text-muted); line-height: 1.5; font-size: 0.95em;">
+                            ${c.content.replace(/\n/g, '<br>')}
+                        </div>
+                        
+                        ${isAuthor ? `
+                        <form id="comment-edit-${cId}" action="/edit-comment/${cId}" method="POST" style="display: none; margin-top: 10px;">
+                            <input type="hidden" name="slug" value="${reviewSlug}">
+                            <textarea name="content" class="comment-textarea" style="min-height: 60px; margin-bottom: 10px;" required>${c.content}</textarea>
+                            <div style="display: flex; gap: 10px;">
+                                <button type="submit" class="comment-btn" style="padding: 5px 15px; font-size: 0.9em;">Save</button>
+                                <button type="button" class="comment-btn" style="padding: 5px 15px; font-size: 0.9em; background: var(--bg-input); color: var(--text-muted);" onclick="toggleEditComment('${cId}')">Cancel</button>
+                            </div>
+                        </form>
+                        ` : ''}
+                        
+                        ${actionButtons}
+
+                        <form id="comment-reply-${cId}" action="/submit-comment" method="POST" style="display: none; margin-top: 15px; padding-top: 15px; border-top: 1px dashed var(--border-color);">
+                            <input type="hidden" name="slug" value="${reviewSlug}">
+                            <input type="hidden" name="parent_id" value="${cId}">
+                            <textarea name="content" class="comment-textarea" style="min-height: 60px; margin-bottom: 10px;" placeholder="Replying to ${cAuthor}..." required></textarea>
+                            <div style="display: flex; gap: 10px;">
+                                <button type="submit" class="comment-btn" style="padding: 5px 15px; font-size: 0.9em; background: var(--accent-primary);">Post Reply</button>
+                                <button type="button" class="comment-btn" style="padding: 5px 15px; font-size: 0.9em; background: var(--bg-input); color: var(--text-muted);" onclick="toggleReplyBox('${cId}')">Cancel</button>
+                            </div>
+                        </form>
+
+                    </div>
+                </div>
+            `;
+        }
+
+        function toggleEditComment(commentId) {
+            const displayDiv = document.getElementById(`comment-display-${commentId}`);
+            const editForm = document.getElementById(`comment-edit-${commentId}`);
+            if (displayDiv.style.display === 'none') {
+                displayDiv.style.display = 'block';
+                editForm.style.display = 'none';
+            } else {
+                displayDiv.style.display = 'none';
+                editForm.style.display = 'block';
+            }
+        }
+
+        function toggleReplyBox(commentId) {
+            const replyForm = document.getElementById(`comment-reply-${commentId}`);
+            replyForm.style.display = replyForm.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function openReportModal(username) {
+            document.getElementById('modal-reported-name').innerText = username;
+            document.getElementById('input-reported-name').value = username;
+            document.getElementById('reportModal').style.display = "block";
+        }
+
+        function closeReportModal() {
+            document.getElementById('reportModal').style.display = "none";
+        }
+
+        function setModTarget() {
+            const targetUser = document.getElementById('input-reported-name').value;
+            document.getElementById('quick-mod-form').action = "/moderate-user/" + targetUser;
+        }
+
+        loadReview();
+    </script>
+
+</body>
+</html>
