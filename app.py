@@ -451,11 +451,21 @@ def submit_review():
 
     # NEW: Added release_year to payload
     payload = {
-        "category": category, "title": title, "slug": slug, "cover_image_url": cover_image_url,
-        "content": content, "tldr": tldr, "staff_score": staff_score, "granular_scores": granular_scores,
-        "rating": legacy_rating, "author_id": user_id, "status": status, "is_controversial": is_controversial,
-        "tags": review_tags, "release_year": release_year
-    }
+            "title": safe_censor(request.form.get('title')),
+            "slug": slug,
+            "category": category,
+            "status": status,
+            "author_id": user_id,
+            "content": safe_censor(request.form.get('content')),
+            "tldr": safe_censor(request.form.get('tldr')),
+            "staff_score": staff_score,
+            "granular_scores": granular_scores,
+            "release_year": release_year,
+            "cover_image_url": request.form.get('cover_image_url'),
+            "imdb_id": request.form.get('imdb_id'),  # <--- ADD THIS LINE HERE
+            "tags": [t.strip().lower() for t in request.form.get('tags', '').split(',') if t.strip()],
+            "is_controversial": False 
+        }
 
     try:
         if original_slug:
