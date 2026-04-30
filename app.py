@@ -462,7 +462,7 @@ def submit_review():
             "granular_scores": granular_scores,
             "release_year": release_year,
             "cover_image_url": request.form.get('cover_image_url'),
-            "imdb_id": request.form.get('imdb_id'),  # <--- ADD THIS LINE HERE
+            "imdb_id": request.form.get('imdb_id'), # <-- THIS IS THE MISSING LINK!
             "tags": [t.strip().lower() for t in request.form.get('tags', '').split(',') if t.strip()],
             "is_controversial": False 
         }
