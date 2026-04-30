@@ -288,58 +288,67 @@ def agree_to_tos():
     
 @app.route('/quick-add-draft', methods=['POST'])
 def quick_add_draft():
-    import re # Forced import inside the function so it can't be missed
+    import re 
     
     user_id = session.get('user_id')
     if not user_id: return redirect(url_for('login'))
 
-    # Safety Net 1: Admin Check
     try:
         user = supabase.table('users').select('role').eq('id', user_id).single().execute()
         if user.data.get('role') not in ['owner', 'admin']: return "Access Denied", 403
     except Exception as e:
         return f"Authentication Error: {e}", 403
 
-    # Safety Net 2: The Data Parser
     try:
         category = request.form.get('category', 'game')
         raw_input = request.form.get('raw_input', '').strip()
         
-        title = raw_input
-        release_year = None
+        # BULK UPGRADE: Split the input by newlines and loop through them!
+        lines = [line.strip() for line in raw_input.split('\n') if line.strip()]
         
-        if ',' in raw_input:
-            parts = raw_input.rsplit(',', 1)
-            title = parts[0].strip()
-            year_str = parts[1].strip()
-            if year_str.isdigit():
-                release_year = int(year_str)
-                
-        slug = re.sub(r'[^a-z0-9]+', '-', title.lower()).strip('-')
-        placeholder_text = title.replace(' ', '+')[:15]
-        cover_image_url = f"https://via.placeholder.com/150x210/1e1e1e/88C0D0?text={placeholder_text}"
+        for line in lines:
+            title = line
+            release_year = None
+            
+            if ',' in line:
+                parts = line.rsplit(',', 1)
+                title = parts[0].strip()
+                year_str = parts[1].strip()
+                if year_str.isdigit():
+                    release_year = int(year_str)
+                    
+            # Cap the title length just in case formatting gets weird
+            title = title[:100]
+            slug = re.sub(r'[^a-z0-9]+', '-', title.lower()).strip('-')
+            
+            # Add a random hex to the slug to prevent duplicates if games have the same name
+            import uuid
+            slug = f"{slug}-{uuid.uuid4().hex[:6]}"
 
-        payload = {
-            "title": safe_censor(title),
-            "slug": slug,
-            "category": category,
-            "status": "draft",
-            "author_id": user_id,
-            "content": "Score and review coming soon...",
-            "tldr": "Placeholder for an upcoming review.",
-            "staff_score": 0,
-            "granular_scores": {},
-            "rating": 0,
-            "release_year": release_year,
-            "cover_image_url": cover_image_url,
-            "tags": [],               # Added to prevent SQL NOT NULL panic
-            "is_controversial": False # Added to prevent SQL NOT NULL panic
-        }
+            placeholder_text = title.replace(' ', '+')[:15]
+            cover_image_url = f"https://via.placeholder.com/150x210/1e1e1e/88C0D0?text={placeholder_text}"
 
-        supabase.table('reviews').insert(payload).execute()
+            payload = {
+                "title": safe_censor(title),
+                "slug": slug,
+                "category": category,
+                "status": "draft",
+                "author_id": user_id,
+                "content": "Score and review coming soon...",
+                "tldr": "Placeholder for an upcoming review.",
+                "staff_score": 0,
+                "granular_scores": {},
+                "rating": 0,
+                "release_year": release_year,
+                "cover_image_url": cover_image_url,
+                "tags": [],
+                "is_controversial": False
+            }
+
+            supabase.table('reviews').insert(payload).execute()
+
         return redirect(url_for('create_review_page'))
     
-    # If it crashes now, it will print the EXACT reason on your screen!
     except Exception as e:
         return f"SYSTEM CRASH LOG: {str(e)}", 500
 
