@@ -99,6 +99,28 @@
     <h1 style="margin-bottom: 5px; color: var(--text-main);">Staff Console</h1>
     <p style="color: var(--text-muted); margin-top: 0; margin-bottom: 20px;">{{ 'Edit Existing Review' if review else 'Review Creation Engine' }}</p>
 
+    {% if not review %}
+    <div style="background: var(--bg-card); padding: 20px; border-radius: 8px; border: 1px solid var(--accent-secondary); margin-bottom: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.3);">
+        <h3 style="margin-top: 0; color: var(--accent-secondary); display: flex; align-items: center; gap: 10px;">
+            ⚡ Quick Add "Coming Soon" Draft
+        </h3>
+        <p style="color: var(--text-muted); font-size: 0.9em; margin-top: 0;">Paste AI format: <strong style="color: var(--text-main);">Game Title, 2026</strong> (or 'Unknown' for TBA). This bypasses the main form.</p>
+        
+        <form action="/quick-add-draft" method="POST" style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <select name="category" style="padding: 10px; background: var(--bg-input); border: 1px solid var(--border-color); color: var(--text-main); border-radius: 4px; font-weight: bold;">
+                <option value="game">🎮 Video Game</option>
+                <option value="movie">🎬 Movie</option>
+                <option value="tv">📺 TV Show</option>
+                <option value="book">📚 Book</option>
+            </select>
+            
+            <input type="text" name="raw_input" placeholder="e.g., Grand Theft Auto VI, 2026" required style="flex-grow: 1; padding: 10px; background: var(--bg-input); border: 1px solid var(--border-color); color: var(--text-main); border-radius: 4px;">
+            
+            <button type="submit" style="background: var(--accent-secondary); color: white; border: none; padding: 10px 20px; border-radius: 4px; font-weight: bold; cursor: pointer;">Add Draft &rarr;</button>
+        </form>
+    </div>
+    <hr style="border-color: var(--border-color); margin-bottom: 30px;">
+    {% endif %}
     <form action="/submit-review" method="POST">
         <input type="hidden" name="original_slug" value="{{ review.slug if review else '' }}">
 

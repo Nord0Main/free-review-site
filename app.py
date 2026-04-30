@@ -285,6 +285,56 @@ def agree_to_tos():
         return redirect(request.referrer or url_for('home'))
     except Exception as e:
         return f"Error: {e}"
+    
+@app.route('/quick-add-draft', methods=['POST'])
+def quick_add_draft():
+    user_id = session.get('user_id')
+    if not user_id: return redirect(url_for('login'))
+
+    user = supabase.table('users').select('role').eq('id', user_id).single().execute()
+    if user.data.get('role') not in ['owner', 'admin']: return "Access Denied", 403
+
+    category = request.form.get('category', 'game')
+    raw_input = request.form.get('raw_input', '').strip()
+    
+    # Parse the input: "Title, 2026" or "Title, Unknown"
+    title = raw_input
+    release_year = None
+    
+    if ',' in raw_input:
+        parts = raw_input.rsplit(',', 1)
+        title = parts[0].strip()
+        year_str = parts[1].strip()
+        if year_str.isdigit():
+            release_year = int(year_str)
+            
+    # Generate a clean URL slug from the title
+    slug = re.sub(r'[^a-z0-9]+', '-', title.lower()).strip('-')
+    
+    # Generate a clean placeholder image URL
+    placeholder_text = title.replace(' ', '+')[:15]
+    cover_image_url = f"https://via.placeholder.com/150x210/1e1e1e/88C0D0?text={placeholder_text}"
+
+    payload = {
+        "title": safe_censor(title),
+        "slug": slug,
+        "category": category,
+        "status": "draft",
+        "author_id": user_id,
+        "content": "Score and review coming soon...",
+        "tldr": "Placeholder for an upcoming review.",
+        "staff_score": 0,
+        "granular_scores": {},
+        "rating": 0,
+        "release_year": release_year,
+        "cover_image_url": cover_image_url
+    }
+
+    try:
+        supabase.table('reviews').insert(payload).execute()
+        return redirect(url_for('create_review_page'))
+    except Exception as e:
+        return f"Error creating quick draft: {e}"
 
 # --- STAFF CREATION ENGINE ---
 
