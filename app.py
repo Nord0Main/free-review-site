@@ -554,44 +554,48 @@ def get_streaming_providers(imdb_id):
     import requests
     import os
     
-    if not imdb_id: 
-        return None
-    
+    imdb_id = str(imdb_id).strip() 
     api_key = os.environ.get("WATCHMODE_API_KEY")
+    
     if not api_key: 
-        print("Watchmode API Key missing from environment.")
-        return None
+        return {"DEBUG_ERROR": "API Key is missing! Render doesn't see WATCHMODE_API_KEY."}
     
     try:
-        # STEP 1: Ask Watchmode to translate the IMDb ID into a Watchmode ID
-        search_url = f"https://api.watchmode.com/v1/search/?search_field=imdb_id&search_value={imdb_id}&apiKey={api_key}"
-        search_res = requests.get(search_url).json()
-        
-        # Check if we got a match
-        title_results = search_res.get('title_results', [])
-        if not title_results:
-            print(f"Watchmode couldn't find a match for IMDb ID: {imdb_id}")
-            return None
-            
-        watchmode_id = title_results[0].get('id')
-        
-        # STEP 2: Use the Watchmode ID to get the streaming sources
-        sources_url = f"https://api.watchmode.com/v1/title/{watchmode_id}/sources/?apiKey={api_key}"
-        response = requests.get(sources_url)
+        # SHORTCUT: Watchmode allows IMDb IDs directly if you append regions=US
+        url = f"https://api.watchmode.com/v1/title/{imdb_id}/sources/?apiKey={api_key}&regions=US"
+        response = requests.get(url)
         data = response.json()
         
+        # If Watchmode sends an error message back, catch it
+        if isinstance(data, dict) and data.get('success') == False:
+            return {"DEBUG_ERROR": f"Watchmode rejected the ID: {data.get('message')}"}
+        elif isinstance(data, dict) and 'statusCode' in data:
+            return {"DEBUG_ERROR": f"Watchmode Error Code: {data.get('statusCode')}"}
+
         subs = {}
-        # Ensure Watchmode returned a valid list of sources
+        backups = {}
+        
         if isinstance(data, list):
+            if len(data) == 0:
+                return {"DEBUG_ERROR": f"Watchmode found {imdb_id}, but there are 0 streaming sources in the US."}
+                
             for source in data:
-                # 'sub' means Free with Subscription (Netflix, Max, Hulu, etc.)
-                if source.get('type') == 'sub':
-                    subs[source['name']] = source['logo_100px']
+                name = source.get('name')
+                logo = source.get('logo_100px')
+                stype = source.get('type')
+                
+                # Grab Subscriptions OR Rent/Buy backups
+                if stype in ['sub', 'free']:
+                    subs[name] = logo
+                elif stype in ['rent', 'buy']:
+                    backups[name] = logo
                     
-        return subs if subs else None
+        if subs: return subs
+        if backups: return backups
+        return {"DEBUG_ERROR": "Data received, but no valid Sub or Rent/Buy options found."}
+        
     except Exception as e:
-        print(f"Watchmode API Error: {e}")
-        return None
+        return {"DEBUG_ERROR": f"Python Crash: {str(e)}"}
 
 @app.route('/review/<slug>')
 def review_page(slug):
