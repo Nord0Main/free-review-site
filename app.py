@@ -556,47 +556,71 @@ def get_streaming_providers(imdb_id):
     
     imdb_id = str(imdb_id).strip() 
     api_key = os.environ.get("WATCHMODE_API_KEY")
+    if not api_key: return {"DEBUG_ERROR": "API Key is missing!"}
     
-    if not api_key: 
-        return {"DEBUG_ERROR": "API Key is missing! Render doesn't see WATCHMODE_API_KEY."}
-    
+    # 1. OUR OWN RELIABLE ICONS (Wikipedia / Wikimedia Commons)
+    KNOWN_LOGOS = {
+        "netflix": "https://upload.wikimedia.org/wikipedia/commons/0/08/Netflix_2015_logo.svg",
+        "max": "https://upload.wikimedia.org/wikipedia/commons/1/17/Max_logo.svg",
+        "hulu": "https://upload.wikimedia.org/wikipedia/commons/e/e4/Hulu_Logo.svg",
+        "prime video": "https://upload.wikimedia.org/wikipedia/commons/f/f1/Prime_Video.png",
+        "disney+": "https://upload.wikimedia.org/wikipedia/commons/3/3e/Disney%2B_logo.svg",
+        "apple tv+": "https://upload.wikimedia.org/wikipedia/commons/2/28/Apple_TV_Plus_Logo.svg",
+        "peacock": "https://upload.wikimedia.org/wikipedia/commons/d/d3/Peacock_%28streaming_service%29_logo.svg",
+        "paramount+": "https://upload.wikimedia.org/wikipedia/commons/a/a5/Paramount_Plus.svg",
+        "youtube": "https://upload.wikimedia.org/wikipedia/commons/b/b8/YouTube_Logo_2017.svg",
+        "crunchyroll": "https://upload.wikimedia.org/wikipedia/commons/0/08/Crunchyroll_Logo.png",
+        "mgm+": "https://upload.wikimedia.org/wikipedia/commons/1/1a/MGM%2B_logo.svg",
+        "starz": "https://upload.wikimedia.org/wikipedia/commons/e/e2/Starz_2016.svg",
+        "showtime": "https://upload.wikimedia.org/wikipedia/commons/c/c5/Showtime.svg"
+    }
+
+    # 2. THE DEDUPLICATION FILTER
+    def get_brand(name):
+        n = name.lower()
+        if 'max' in n or 'hbo' in n: return 'Max'
+        if 'netflix' in n: return 'Netflix'
+        if 'hulu' in n: return 'Hulu'
+        if 'prime' in n or 'amazon' in n: return 'Prime Video'
+        if 'disney' in n: return 'Disney+'
+        if 'apple' in n: return 'Apple TV+'
+        if 'peacock' in n: return 'Peacock'
+        if 'paramount' in n: return 'Paramount+'
+        if 'youtube' in n: return 'YouTube'
+        if 'crunchyroll' in n: return 'Crunchyroll'
+        if 'mgm' in n: return 'MGM+'
+        if 'starz' in n: return 'STARZ'
+        if 'showtime' in n: return 'Showtime'
+        return name
+
     try:
-        # SHORTCUT: Watchmode allows IMDb IDs directly if you append regions=US
         url = f"https://api.watchmode.com/v1/title/{imdb_id}/sources/?apiKey={api_key}&regions=US"
         response = requests.get(url)
         data = response.json()
         
-        # If Watchmode sends an error message back, catch it
         if isinstance(data, dict) and data.get('success') == False:
-            return {"DEBUG_ERROR": f"Watchmode rejected the ID: {data.get('message')}"}
-        elif isinstance(data, dict) and 'statusCode' in data:
-            return {"DEBUG_ERROR": f"Watchmode Error Code: {data.get('statusCode')}"}
+            return {"DEBUG_ERROR": f"Watchmode rejected: {data.get('message')}"}
 
         subs = {}
         backups = {}
         
         if isinstance(data, list):
-            if len(data) == 0:
-                return {"DEBUG_ERROR": f"Watchmode found {imdb_id}, but there are 0 streaming sources in the US."}
+            if len(data) == 0: return {"DEBUG_ERROR": f"Watchmode found 0 US sources."}
                 
             for source in data:
-                name = source.get('name')
-                raw_logo = source.get('logo_100px')
+                raw_name = source.get('name', '')
+                
+                # Normalize the name (e.g., "Max Amazon Channel" -> "Max")
+                brand_name = get_brand(raw_name) 
                 stype = source.get('type')
                 
-                # THE MAGICAL HOTLINK BYPASS
-                # We strip the https:// and pass the image through the wsrv.nl proxy 
-                # to bypass Watchmode's aggressive Cloudflare blocking.
-                logo = raw_logo
-                if raw_logo:
-                    clean_logo = raw_logo.replace('https://', '').replace('http://', '')
-                    logo = f"https://wsrv.nl/?url={clean_logo}"
+                # Use our ultra-reliable logo! If it's a weird unknown channel, fallback to Watchmode's logo
+                logo = KNOWN_LOGOS.get(brand_name.lower(), source.get('logo_100px'))
                 
-                # Grab Subscriptions OR Rent/Buy backups
                 if stype in ['sub', 'free']:
-                    subs[name] = logo
+                    subs[brand_name] = logo # This naturally overwrites duplicates!
                 elif stype in ['rent', 'buy']:
-                    backups[name] = logo
+                    backups[brand_name] = logo
                     
         if subs: return subs
         if backups: return backups
