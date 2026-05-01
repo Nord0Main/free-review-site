@@ -584,6 +584,10 @@ def get_streaming_providers(imdb_id):
                 logo = source.get('logo_100px')
                 stype = source.get('type')
                 
+                # Force secure HTTPS to prevent browser "Mixed Content" blocks
+                if logo and logo.startswith('http://'):
+                    logo = logo.replace('http://', 'https://')
+                
                 # Grab Subscriptions OR Rent/Buy backups
                 if stype in ['sub', 'free']:
                     subs[name] = logo

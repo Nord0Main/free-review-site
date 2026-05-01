@@ -326,7 +326,7 @@
                             <h3 style="margin-top: 0; font-size: 0.9em; color: var(--accent-secondary); text-transform: uppercase; letter-spacing: 1px;">📺 Where to Watch</h3>
                             <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-top: 10px;">
                                 {% for name, logo_url in streaming.items() %}
-                                    <img src="{{ logo_url }}" alt="{{ name }}" title="Watch on {{ name }}" style="width: 40px; height: 40px; border-radius: 8px; border: 1px solid var(--border-color); background: #000;">
+                                    <img src="{{ logo_url }}" alt="{{ name }}" title="Watch on {{ name }}" referrerpolicy="no-referrer" style="width: 40px; height: 40px; border-radius: 8px; border: 1px solid var(--border-color); background: #000; object-fit: contain;">
                                 {% endfor %}
                             </div>
                             <p style="font-size: 0.7em; color: var(--text-muted); margin-bottom: 0; margin-top: 10px;">Streaming data provided by Watchmode.</p>
@@ -334,7 +334,7 @@
                         `;
                         {% endif %}
                     {% endif %}
-
+                    
                     // Assign everything in the exact order requested
                     container.innerHTML = `
                         ${coverImg}
