@@ -406,30 +406,44 @@ def edit_review_page(slug):
 @app.route('/submit-review', methods=['POST'])
 def submit_review():
     user_id = session.get('user_id')
-    if not user_id: return redirect(url_for('login'))
-
-    original_slug = request.form.get('original_slug')
+    if not user_id: return redirect('/login')
+    
+    # 1. Grab base form data
+    action = request.form.get('action') # 'draft' or 'post'
+    title = request.form.get('title')
+    release_year = request.form.get('release_year')
     category = request.form.get('category')
     
-    title = safe_censor(request.form.get('title'))
-    content = safe_censor(request.form.get('content'))
-    tldr = safe_censor(request.form.get('tldr'))
-    tags_input = safe_censor(request.form.get('tags', ''))
+    # 2. Grab manual image/ID overrides
+    manual_cover = request.form.get('cover_image_url')
+    manual_imdb = request.form.get('imdb_id')
     
-    slug = request.form.get('slug')
-    cover_image_url = request.form.get('cover_image_url')
-    action = request.form.get('action')
-    is_controversial = request.form.get('is_controversial') == 'on'
+    cover_image_url = manual_cover
+    imdb_id = manual_imdb
     
-    # NEW: Capture Release Year
-    release_year = request.form.get('release_year', type=int)
-    
-    review_tags = [t.strip().lower() for t in tags_input.split(',') if t.strip()]
-    
-    for t in review_tags:
-        try: supabase.table('tags').insert({"name": t}).execute()
-        except: pass
-    
+    # 3. EXECUTE THE HUNT TOOL (If fields are empty)
+    if not cover_image_url or not imdb_id:
+        hunt_results = run_api_hunt(title, release_year)
+        
+        # If the manual field is empty AND the hunt found something, overwrite it!
+        if not cover_image_url and hunt_results.get('poster'):
+            cover_image_url = hunt_results['poster']
+            
+        if not imdb_id and hunt_results.get('imdb_id'):
+            imdb_id = hunt_results['imdb_id']
+            
+    # 4. POST LIVE VALIDATION (The Hard Block)
+    if action == 'post':
+        if not cover_image_url or not imdb_id:
+            # If it's a Live Post and we STILL don't have an image or ID, abort the save!
+            error_msg = "POST LIVE FAILED: Hunt Tool could not find the Poster or IMDb ID. Please manually enter them to post live."
+            
+            # We return the template immediately with the error and the data they already typed so they don't lose their work
+            return render_template('create_review.html', 
+                                   error=error_msg, 
+                                   review=request.form)
+
+    # 5. Determine Status
     status = 'published' if action == 'post' else 'draft'
 
     granular_scores = {}
@@ -548,6 +562,37 @@ def submit_suggestion():
         return redirect(url_for('home'))
     except Exception as e:
         return f"Error: {e}"
+
+# --- OMDB HUNT TOOL ---
+def run_api_hunt(title, year):
+    import requests
+    import os
+    import urllib.parse
+    
+    omdb_key = os.environ.get("OMDB_API_KEY")
+    if not omdb_key or not title: 
+        return {}
+        
+    # URL encode the title so spaces don't break the link
+    safe_title = urllib.parse.quote(title)
+    url = f"http://www.omdbapi.com/?t={safe_title}&y={year}&apikey={omdb_key}"
+    
+    try:
+        res = requests.get(url).json()
+        if res.get("Response") == "True":
+            poster = res.get("Poster")
+            # If OMDb has no poster, they return the literal string "N/A"
+            if poster == "N/A": 
+                poster = None 
+                
+            return {
+                "imdb_id": res.get("imdbID"),
+                "poster": poster
+            }
+    except Exception as e:
+        print(f"Hunt Tool Error: {e}")
+        
+    return {}
 
 # --- WATCHMODE STREAMING ENGINE ---
 def get_streaming_providers(imdb_id):

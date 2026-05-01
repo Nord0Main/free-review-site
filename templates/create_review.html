@@ -96,7 +96,16 @@
 <body class="text-medium">
 
     <a href="/" style="color: var(--accent-primary); text-decoration: none; font-weight: bold;">&larr; Back to Home</a>
+    
     <h1 style="margin-bottom: 5px; color: var(--text-main);">Staff Console</h1>
+    
+    {% if error %}
+    <div style="background: rgba(255, 82, 82, 0.1); border: 1px solid var(--accent-danger); padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+        <h3 style="margin-top: 0; color: var(--accent-danger);">⚠️ Action Required</h3>
+        <p style="color: var(--text-main); margin-bottom: 0;">{{ error }}</p>
+    </div>
+    {% endif %}
+    
     <p style="color: var(--text-muted); margin-top: 0; margin-bottom: 20px;">{{ 'Edit Existing Review' if review else 'Review Creation Engine' }}</p>
 
     {% if not review %}
@@ -149,10 +158,10 @@
             <input type="text" name="slug" id="slug-input" value="{{ review.slug if review else '' }}" required readonly style="background-color: var(--bg-body); color: var(--text-muted);">
 
             <label>Cover Image URL</label>
-            <input type="text" name="cover_image_url" value="{{ review.cover_image_url if review else '' }}" placeholder="https://..." required>
+            <input type="text" name="cover_image_url" value="{{ review.cover_image_url if review else '' }}" placeholder="https://... (Leave blank to auto-fetch from OMDb)">
 
             <label>IMDb ID (For "Where to Watch")</label>
-            <input type="text" name="imdb_id" value="{{ review.imdb_id if review else '' }}" placeholder="e.g., tt0137523">
+            <input type="text" name="imdb_id" value="{{ review.imdb_id if review else '' }}" placeholder="e.g., tt0137523 (Leave blank to auto-fetch from OMDb)">
         </div>
 
         <div class="form-section">
