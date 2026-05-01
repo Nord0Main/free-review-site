@@ -561,25 +561,8 @@ def get_streaming_providers(imdb_id):
     api_key = os.environ.get("WATCHMODE_API_KEY")
     if not api_key: 
         return {"DEBUG_ERROR": "API Key is missing!"}
-    
-    # 1. OUR OWN RELIABLE ICONS (Wikipedia / Wikimedia Commons)
-    KNOWN_LOGOS = {
-        "netflix": "https://upload.wikimedia.org/wikipedia/commons/0/08/Netflix_2015_logo.svg",
-        "max": "https://upload.wikimedia.org/wikipedia/commons/1/17/Max_logo.svg",
-        "hulu": "https://upload.wikimedia.org/wikipedia/commons/e/e4/Hulu_Logo.svg",
-        "prime video": "https://upload.wikimedia.org/wikipedia/commons/f/f1/Prime_Video.png",
-        "disney+": "https://upload.wikimedia.org/wikipedia/commons/3/3e/Disney%2B_logo.svg",
-        "apple tv+": "https://upload.wikimedia.org/wikipedia/commons/2/28/Apple_TV_Plus_Logo.svg",
-        "peacock": "https://upload.wikimedia.org/wikipedia/commons/d/d3/Peacock_%28streaming_service%29_logo.svg",
-        "paramount+": "https://upload.wikimedia.org/wikipedia/commons/a/a5/Paramount_Plus.svg",
-        "youtube": "https://upload.wikimedia.org/wikipedia/commons/b/b8/YouTube_Logo_2017.svg",
-        "crunchyroll": "https://upload.wikimedia.org/wikipedia/commons/0/08/Crunchyroll_Logo.png",
-        "mgm+": "https://upload.wikimedia.org/wikipedia/commons/1/1a/MGM%2B_logo.svg",
-        "starz": "https://upload.wikimedia.org/wikipedia/commons/e/e2/Starz_2016.svg",
-        "showtime": "https://upload.wikimedia.org/wikipedia/commons/c/c5/Showtime.svg"
-    }
 
-    # 2. THE DEDUPLICATION FILTER
+    # 1. THE DEDUPLICATION FILTER (Crushes spam into single buttons)
     def get_brand(name):
         if not name: return "Unknown"
         n = str(name).lower()
@@ -615,13 +598,16 @@ def get_streaming_providers(imdb_id):
                 
             for source in data:
                 raw_name = source.get('name', '')
-                
                 brand_name = get_brand(raw_name) 
                 stype = source.get('type')
+                raw_logo = source.get('logo_100px', '')
                 
-                # Safe get: Uses Wikipedia logo if found, otherwise falls back to Watchmode's API logo
-                fallback_logo = source.get('logo_100px', '')
-                logo = KNOWN_LOGOS.get(brand_name.lower(), fallback_logo)
+                # 2. THE CLOUDFLARE BYPASS 
+                # Grab Watchmode's official live logo and proxy it so it never breaks
+                logo = ""
+                if raw_logo:
+                    clean_logo = raw_logo.replace('https://', '').replace('http://', '')
+                    logo = f"https://wsrv.nl/?url={clean_logo}"
                 
                 if stype in ['sub', 'free']:
                     subs[brand_name] = logo 
