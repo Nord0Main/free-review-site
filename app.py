@@ -554,9 +554,13 @@ def get_streaming_providers(imdb_id):
     import requests
     import os
     
+    if not imdb_id: 
+        return {"DEBUG_ERROR": "No IMDb ID provided."}
+        
     imdb_id = str(imdb_id).strip() 
     api_key = os.environ.get("WATCHMODE_API_KEY")
-    if not api_key: return {"DEBUG_ERROR": "API Key is missing!"}
+    if not api_key: 
+        return {"DEBUG_ERROR": "API Key is missing!"}
     
     # 1. OUR OWN RELIABLE ICONS (Wikipedia / Wikimedia Commons)
     KNOWN_LOGOS = {
@@ -577,7 +581,8 @@ def get_streaming_providers(imdb_id):
 
     # 2. THE DEDUPLICATION FILTER
     def get_brand(name):
-        n = name.lower()
+        if not name: return "Unknown"
+        n = str(name).lower()
         if 'max' in n or 'hbo' in n: return 'Max'
         if 'netflix' in n: return 'Netflix'
         if 'hulu' in n: return 'Hulu'
@@ -591,7 +596,7 @@ def get_streaming_providers(imdb_id):
         if 'mgm' in n: return 'MGM+'
         if 'starz' in n: return 'STARZ'
         if 'showtime' in n: return 'Showtime'
-        return name
+        return str(name)
 
     try:
         url = f"https://api.watchmode.com/v1/title/{imdb_id}/sources/?apiKey={api_key}&regions=US"
@@ -605,20 +610,21 @@ def get_streaming_providers(imdb_id):
         backups = {}
         
         if isinstance(data, list):
-            if len(data) == 0: return {"DEBUG_ERROR": f"Watchmode found 0 US sources."}
+            if len(data) == 0: 
+                return {"DEBUG_ERROR": "Watchmode found 0 US sources."}
                 
             for source in data:
                 raw_name = source.get('name', '')
                 
-                # Normalize the name (e.g., "Max Amazon Channel" -> "Max")
                 brand_name = get_brand(raw_name) 
                 stype = source.get('type')
                 
-                # Use our ultra-reliable logo! If it's a weird unknown channel, fallback to Watchmode's logo
-                logo = KNOWN_LOGOS.get(brand_name.lower(), source.get('logo_100px'))
+                # Safe get: Uses Wikipedia logo if found, otherwise falls back to Watchmode's API logo
+                fallback_logo = source.get('logo_100px', '')
+                logo = KNOWN_LOGOS.get(brand_name.lower(), fallback_logo)
                 
                 if stype in ['sub', 'free']:
-                    subs[brand_name] = logo # This naturally overwrites duplicates!
+                    subs[brand_name] = logo 
                 elif stype in ['rent', 'buy']:
                     backups[brand_name] = logo
                     

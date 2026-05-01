@@ -308,15 +308,15 @@
                         `;
                     }
 
-                    // Pre-compile the Jinja streaming block into a JS variable
+                   // Pre-compile the Jinja streaming block into a JS variable
                     let streamingHtml = '';
                     {% if streaming %}
-                        {% if streaming.DEBUG_ERROR %}
+                        {% if streaming.get('DEBUG_ERROR') %}
                         // THE RED ALERT DEBUGGER
                         streamingHtml = `
                         <div style="background: rgba(255, 82, 82, 0.1); border: 1px solid var(--accent-danger); padding: 15px; border-radius: 8px; margin-bottom: 30px;">
                             <h3 style="margin-top: 0; color: var(--accent-danger);">⚠️ Streaming API Debugger</h3>
-                            <p style="color: var(--text-main); margin-bottom: 0;">${ "{{ streaming.DEBUG_ERROR }}" }</p>
+                            <p style="color: var(--text-main); margin-bottom: 0;">${ "{{ streaming.get('DEBUG_ERROR') }}" }</p>
                         </div>
                         `;
                         {% else %}
@@ -327,6 +327,7 @@
                             <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-top: 10px;">
                                 {% for name, logo_url in streaming.items() %}
                                     <img src="{{ logo_url }}" alt="{{ name }}" title="Watch on {{ name }}" style="width: 45px; height: 45px; border-radius: 8px; border: 1px solid var(--border-color); background: #ffffff; padding: 4px; object-fit: contain;">
+                                {% endfor %}
                             </div>
                             <p style="font-size: 0.7em; color: var(--text-muted); margin-bottom: 0; margin-top: 10px;">Streaming data provided by Watchmode.</p>
                         </div>
