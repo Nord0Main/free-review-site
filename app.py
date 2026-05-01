@@ -581,12 +581,16 @@ def get_streaming_providers(imdb_id):
                 
             for source in data:
                 name = source.get('name')
-                logo = source.get('logo_100px')
+                raw_logo = source.get('logo_100px')
                 stype = source.get('type')
                 
-                # Force secure HTTPS to prevent browser "Mixed Content" blocks
-                if logo and logo.startswith('http://'):
-                    logo = logo.replace('http://', 'https://')
+                # THE MAGICAL HOTLINK BYPASS
+                # We strip the https:// and pass the image through the wsrv.nl proxy 
+                # to bypass Watchmode's aggressive Cloudflare blocking.
+                logo = raw_logo
+                if raw_logo:
+                    clean_logo = raw_logo.replace('https://', '').replace('http://', '')
+                    logo = f"https://wsrv.nl/?url={clean_logo}"
                 
                 # Grab Subscriptions OR Rent/Buy backups
                 if stype in ['sub', 'free']:
