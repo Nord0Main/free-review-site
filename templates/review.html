@@ -257,14 +257,18 @@
                     let staffScoresHtml = '';
                     let votingFormHtml = '';
 
+                    // Create a style string that perfectly mimics the voting input boxes
+                    const badgeStyle = "display: inline-block; width: 60px; padding: 8px; background-color: var(--bg-input); border: 1px solid var(--border-color); color: var(--text-main); border-radius: 4px; text-align: center; font-weight: bold; box-sizing: border-box;";
+
                     if (review.category === 'game') {
                         staffScoresHtml = `
-                            <div class="score-row"><span style="color: var(--text-muted);">Gameplay:</span> <strong style="color: var(--text-main);">${review.granular_scores.gameplay || 0}/10</strong></div>
-                            <div class="score-row"><span style="color: var(--text-muted);">Visuals:</span> <strong style="color: var(--text-main);">${review.granular_scores.visuals || 0}/10</strong></div>
-                            <div class="score-row"><span style="color: var(--text-muted);">Audio:</span> <strong style="color: var(--text-main);">${review.granular_scores.audio || 0}/10</strong></div>
-                            <div class="score-row"><span style="color: var(--text-muted);">Narrative:</span> <strong style="color: var(--text-main);">${review.granular_scores.narrative || 0}/10</strong></div>
-                            <div class="score-row"><span style="color: var(--text-muted);">Replayability:</span> <strong style="color: var(--text-main);">${review.granular_scores.replayability || 0}/10</strong></div>
+                            <div class="score-row"><span style="color: var(--text-muted);">Gameplay:</span> <span style="${badgeStyle}">${review.granular_scores.gameplay || 0}/10</span></div>
+                            <div class="score-row"><span style="color: var(--text-muted);">Visuals:</span> <span style="${badgeStyle}">${review.granular_scores.visuals || 0}/10</span></div>
+                            <div class="score-row"><span style="color: var(--text-muted);">Audio:</span> <span style="${badgeStyle}">${review.granular_scores.audio || 0}/10</span></div>
+                            <div class="score-row"><span style="color: var(--text-muted);">Narrative:</span> <span style="${badgeStyle}">${review.granular_scores.narrative || 0}/10</span></div>
+                            <div class="score-row"><span style="color: var(--text-muted);">Replayability:</span> <span style="${badgeStyle}">${review.granular_scores.replayability || 0}/10</span></div>
                         `;
+                        // ... votingFormHtml stays exactly the same
                         votingFormHtml = `
                             <div class="score-row"><label style="color: var(--text-muted);">Gameplay:</label> <input type="number" name="g_gameplay" min="1" max="10" value="5" required></div>
                             <div class="score-row"><label style="color: var(--text-muted);">Visuals:</label> <input type="number" name="g_visuals" min="1" max="10" value="5" required></div>
@@ -274,12 +278,13 @@
                         `;
                     } else {
                         staffScoresHtml = `
-                            <div class="score-row"><span style="color: var(--text-muted);">Narrative:</span> <strong style="color: var(--text-main);">${review.granular_scores.narrative || 0}/10</strong></div>
-                            <div class="score-row"><span style="color: var(--text-muted);">Performances:</span> <strong style="color: var(--text-main);">${review.granular_scores.performances || 0}/10</strong></div>
-                            <div class="score-row"><span style="color: var(--text-muted);">Cinematography:</span> <strong style="color: var(--text-main);">${review.granular_scores.cinematography || 0}/10</strong></div>
-                            <div class="score-row"><span style="color: var(--text-muted);">Audio/Score:</span> <strong style="color: var(--text-main);">${review.granular_scores.audio || 0}/10</strong></div>
-                            <div class="score-row"><span style="color: var(--text-muted);">Direction/Editing:</span> <strong style="color: var(--text-main);">${review.granular_scores.direction || 0}/10</strong></div>
+                            <div class="score-row"><span style="color: var(--text-muted);">Narrative:</span> <span style="${badgeStyle}">${review.granular_scores.narrative || 0}/10</span></div>
+                            <div class="score-row"><span style="color: var(--text-muted);">Performances:</span> <span style="${badgeStyle}">${review.granular_scores.performances || 0}/10</span></div>
+                            <div class="score-row"><span style="color: var(--text-muted);">Cinematography:</span> <span style="${badgeStyle}">${review.granular_scores.cinematography || 0}/10</span></div>
+                            <div class="score-row"><span style="color: var(--text-muted);">Audio/Score:</span> <span style="${badgeStyle}">${review.granular_scores.audio || 0}/10</span></div>
+                            <div class="score-row"><span style="color: var(--text-muted);">Direction/Editing:</span> <span style="${badgeStyle}">${review.granular_scores.direction || 0}/10</span></div>
                         `;
+                        // ... votingFormHtml stays exactly the same
                         votingFormHtml = `
                             <div class="score-row"><label style="color: var(--text-muted);">Narrative:</label> <input type="number" name="m_narrative" min="1" max="10" value="5" required></div>
                             <div class="score-row"><label style="color: var(--text-muted);">Performances:</label> <input type="number" name="m_performances" min="1" max="10" value="5" required></div>

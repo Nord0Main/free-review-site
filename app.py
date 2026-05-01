@@ -562,24 +562,23 @@ def get_streaming_providers(imdb_id):
     if not api_key: 
         return {"DEBUG_ERROR": "API Key is missing!"}
 
-    # 1. OUR OWN BULLETPROOF ICONS (Clearbit API)
-    KNOWN_LOGOS = {
-        "netflix": "https://logo.clearbit.com/netflix.com",
-        "max": "https://logo.clearbit.com/max.com",
-        "hulu": "https://logo.clearbit.com/hulu.com",
-        "prime video": "https://logo.clearbit.com/primevideo.com",
-        "disney+": "https://logo.clearbit.com/disneyplus.com",
-        "apple tv+": "https://logo.clearbit.com/apple.com",
-        "peacock": "https://logo.clearbit.com/peacocktv.com",
-        "paramount+": "https://logo.clearbit.com/paramountplus.com",
-        "youtube": "https://logo.clearbit.com/youtube.com",
-        "crunchyroll": "https://logo.clearbit.com/crunchyroll.com",
-        "mgm+": "https://logo.clearbit.com/mgmplus.com",
-        "starz": "https://logo.clearbit.com/starz.com",
-        "showtime": "https://logo.clearbit.com/sho.com"
+    # 1. THE UNBLOCKABLE GOOGLE FAVICON API
+    DOMAIN_MAP = {
+        "Netflix": "netflix.com",
+        "Max": "max.com",
+        "Hulu": "hulu.com",
+        "Prime Video": "primevideo.com",
+        "Disney+": "disneyplus.com",
+        "Apple TV+": "tv.apple.com",
+        "Peacock": "peacocktv.com",
+        "Paramount+": "paramountplus.com",
+        "YouTube": "youtube.com",
+        "Crunchyroll": "crunchyroll.com",
+        "MGM+": "mgmplus.com",
+        "STARZ": "starz.com",
+        "Showtime": "sho.com"
     }
 
-    # 2. THE DEDUPLICATION FILTER
     def get_brand(name):
         if not name: return "Unknown"
         n = str(name).lower()
@@ -618,8 +617,15 @@ def get_streaming_providers(imdb_id):
                 brand_name = get_brand(raw_name) 
                 stype = source.get('type')
                 
-                # Pull from Clearbit. If it's a weird obscure channel, fallback to Watchmode's logo
-                logo = KNOWN_LOGOS.get(brand_name.lower(), source.get('logo_100px'))
+                # Grab Google's cached high-res icon for the domain to bypass adblockers & Cloudflare
+                domain = DOMAIN_MAP.get(brand_name)
+                if domain:
+                    logo = f"https://www.google.com/s2/favicons?domain={domain}&sz=128"
+                else:
+                    # Fallback for weird channels
+                    raw_logo = source.get('logo_100px', '')
+                    clean_logo = raw_logo.replace('https://', '').replace('http://', '')
+                    logo = f"https://wsrv.nl/?url={clean_logo}" if raw_logo else ""
                 
                 if stype in ['sub', 'free']:
                     subs[brand_name] = logo 
